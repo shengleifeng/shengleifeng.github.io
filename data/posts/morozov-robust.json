@@ -1,0 +1,57 @@
+{
+  "id": "morozov-robust",
+  "title": "Morozov 偏差原理的统计教条：当噪声水平被高估时",
+  "date": "2026-05-09",
+  "tags": [
+    "正则化参数选择",
+    "Morozov",
+    "鲁棒性"
+  ],
+  "abstract": "分析噪声方差先验不准时偏差原理的偏倚，并提出基于分位数的鲁棒替代准则。",
+  "body": [
+    {
+      "type": "p",
+      "text": "Morozov偏差原理（discrepancy principle）由Morozov于1966年系统提出，长期作为不适定问题正则化参数选择的主导性方法。其核心要求简洁有力：选取正则化参数 $\\alpha$ 使得残差范数等于（或正比于）噪声水平 $\\delta$，即 $\\|Ax_\\alpha - y^\\delta\\| = \\tau \\delta$，其中 $\\tau \\ge 1$ 是为保证正则化解存在性的安全因子。该原理具有严密的收敛性证明：在 $\\delta \\to 0$ 时，所选 $\\alpha(\\delta)$ 给出的正则化解收敛到真解。然而，其有效性隐含一个极强的假设：$\\delta$ 必须被精确已知。"
+    },
+    {
+      "type": "math",
+      "latex": "\\alpha_{\\mathrm{Mor}}^{\\star} = \\arg\\min_{\\alpha > 0}\\,\\left|\\,\\|Ax_\\alpha - y^\\delta\\| - \\tau\\delta\\,\\right|, \\quad \\tau \\ge 1. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "实践中 $\\delta$ 本身往往带有显著不确定性。在医学成像中，噪声方差通常通过对背景区域的经验估计得到，受限于小样本；在雷达与地震学中，噪声统计可由先验物理模型推算，但与现场实际偏差可能达到 $20\\%$ 以上；在压缩感知中，$\\delta$ 甚至可能由估计器（如median absolute deviation）以分位数方式推断，存在不可忽略的渐近偏差。Morozov原理对这些不确定性是脆弱的：当 $\\delta$ 被高估时，$\\alpha$ 系统性过大、解过度平滑；反之当 $\\delta$ 被低估时，$\\alpha$ 偏小、解欠平滑、伪影显著。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathbb{E}[\\alpha_{\\mathrm{Mor}}(\\hat{\\delta})] - \\alpha^{\\star} \\sim \\frac{\\partial \\alpha_{\\mathrm{Mor}}}{\\partial \\delta}\\,(\\hat{\\delta} - \\delta) + \\mathcal{O}((\\hat{\\delta} - \\delta)^2). \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "上述线性化分析表明，$\\alpha$ 关于 $\\hat{\\delta}$ 的灵敏度由 $\\partial \\alpha_{\\mathrm{Mor}} / \\partial \\delta$ 描述。对Tikhonov正则化可显式计算该灵敏度为 $\\partial \\alpha / \\partial \\delta \\sim -\\alpha / \\delta$：相对偏差 $(\\hat{\\delta} - \\delta)/\\delta$ 会被等量地传递给 $\\alpha$ 的相对偏差。这意味着 $20\\%$ 的 $\\delta$ 估计误差将直接转化为 $20\\%$ 的 $\\alpha$ 偏差。在高度不适定场景下，$\\alpha$ 的微小偏差可造成正则化解的严重质量退化，遵循 $d\\|x_\\alpha - x^{\\dagger}\\|/d\\alpha$ 在 $\\alpha \\to 0$ 时的奇异性。"
+    },
+    {
+      "type": "p",
+      "text": "从区间估计的角度，我们将Morozov原理合理推广为区间约束形式：$\\delta_{\\mathrm{lo}} \\le \\|Ax_\\alpha - y^\\delta\\| \\le \\delta_{\\mathrm{hi}}$，其中 $\\delta_{\\mathrm{lo/hi}} = F^{-1}(p_{\\mathrm{lo/hi}})\\,\\hat{\\sigma}$ 由噪声分布的 $\\chi$-分位数给出，$F$ 为残差范数的累积分布函数。"
+    },
+    {
+      "type": "math",
+      "latex": "\\delta_{\\mathrm{lo}} = F^{-1}(p_{\\mathrm{lo}})\\,\\hat{\\sigma}, \\quad \\delta_{\\mathrm{hi}} = F^{-1}(p_{\\mathrm{hi}})\\,\\hat{\\sigma}, \\quad p_{\\mathrm{lo}} = 0.025,\\; p_{\\mathrm{hi}} = 0.975. \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "这一区间约束的统计含义是：我们为正则化参数的选取提供了预定置信水平的分位数匹配法。例如，对于 $95\\%$ 置信区间，$\\delta_{\\mathrm{lo}} = 0.95\\,\\delta$、$\\delta_{\\mathrm{hi}} = 1.05\\,\\delta$（高斯近似下）。若残差 $\\|Ax_\\alpha - y^\\delta\\|$ 落在此区间内，则接受当前的 $\\alpha$；否则按二分法更新。该方法对 $\\delta$ 的估计误差具有平滑的容忍性，避免了Morozov原理的硬性阈值带来的不连续决策。"
+    },
+    {
+      "type": "math",
+      "latex": "\\alpha_{\\mathrm{q}} = \\arg\\min_{\\alpha}\\,\\left|\\,\\|Ax_\\alpha - y^\\delta\\| - \\tfrac{\\delta_{\\mathrm{lo}} + \\delta_{\\mathrm{hi}}}{2}\\,\\right|. \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "更进一步地，我们可以基于噪声分布的尾部行为构造更鲁棒的准则：定义 $\\delta_{\\mathrm{rob}} = \\hat{\\sigma} \\cdot (\\Phi^{-1}(0.75) - \\Phi^{-1}(0.25)) / (Q_{0.75} - Q_{0.25}) \\cdot 1.4826$，即基于四分位距的中位数绝对偏差（MAD）估计器，对异常值稳健。在医学成像、雷达等典型应用中，区间中点 $\\delta_{\\mathrm{mid}} = (\\delta_{\\mathrm{lo}} + \\delta_{\\mathrm{hi}})/2$ 可作为\"鲁棒偏差\"参数，其在 $\\delta$ 的 $30\\%$ 偏差范围内仍能保持正则化解的稳定质量。我们倡导将\"分位数匹配\"作为Morozov原理的现代替代：在保留其渐近收敛性的同时，获得对 $\\delta$ 估计误差的鲁棒性。"
+    }
+  ]
+}

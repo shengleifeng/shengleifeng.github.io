@@ -1,0 +1,56 @@
+{
+  "id": "bessel-source",
+  "title": "贝塞尔光束计算成像中的逆源重构：无衍射基下的奇异值分析",
+  "date": "2025-08-09",
+  "tags": [
+    "计算成像",
+    "贝塞尔光束",
+    "汉克尔变换"
+  ],
+  "abstract": "直接计算贝塞尔算子的奇异函数系（带限伪零阶贝塞尔），通过奇异基截断实现解析正则化。",
+  "body": [
+    {
+      "type": "p",
+      "text": "利用贝塞尔光束 (Bessel Beam) 进行无衍射扫描的成像系统，其前向算子在柱坐标下可分解为 Hankel 变换。该结构使得连续 Hankel 算子 $H_0: f(r) \\mapsto \\int_0^R f(r)\\,J_0(k r)\\,r\\,dr$ 在加权 Hilbert 空间 $L^2((0,R), r\\,dr)$ 上成为紧算子，且具备显式可解的奇异系统。"
+    },
+    {
+      "type": "p",
+      "text": "本文不沿用离散网格上的代数正则化路线，而是直接计算该紧算子的奇异函数系。核心发现是：$H_0$ 的左、右奇异函数均为一族带限的伪零阶 Bessel 函数，奇异值序列与 Bessel 函数的零点位置严格对应。这一解析结构使得反源重构问题被化归为在 Bessel 基下对测量信号的系数级联截断，避免了任何离散插值误差。"
+    },
+    {
+      "type": "math",
+      "latex": "\\sigma_n(H_0) = \\frac{2\\pi\\,R\\,J_0(j_{0,n})}{\\sqrt{j_{0,n+1}^2 - j_{0,n}^2}}, \\quad \\phi_n(r) = \\frac{\\sqrt{2}\\,J_0(j_{0,n} r/R)}{R\\,J_1(j_{0,n})}, \\quad k_n = j_{0,n}/R, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (1) 中 $j_{0,n}$ 为 $J_0$ 的第 $n$ 个正零点。由 Sturm-Liouville 理论，$\\{\\phi_n\\}$ 在 $L^2((0,R), r\\,dr)$ 中构成完备正交基。该奇异值序列具有渐近行为 $\\sigma_n \\sim \\mathcal{O}(n^{-1/3})$（由 $J_0$ 零点间距 $\\Delta j_{0,n} \\sim \\pi$ 导出），其衰减速率比一般 Tikhonov 紧算子的代数衰减 $n^{-\\alpha}$ 更具规律性，从而为正则化参数的选取提供了封闭形式。"
+    },
+    {
+      "type": "math",
+      "latex": "\\sigma_n(H_0) \\sim C\\,n^{-1/3}, \\quad \\sum_{n>N}\\sigma_n^2 \\asymp N^{-1/3}, \\quad \\|H_0\\|_{\\mathrm{HS}}^2 = \\sum_{n=1}^\\infty \\sigma_n^2 < \\infty. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (2) 的 Hilbert-Schmidt 范数有限性保证 $H_0$ 确为紧算子；其 $n^{-1/3}$ 衰减比标准 Tikhonov 紧算子的 $n^{-1/2}$ 慢，意味着 Hankel 变换的\"病态程度\"在经典意义上较轻。命题 1 (Bessel 基截断最优性): 在带噪数据 $y^\\delta$ 下，奇异基截断 $f_\\alpha^\\delta = \\sum_{n:\\sigma_n \\ge \\alpha} \\sigma_n^{-1}\\,\\langle y^\\delta, \\phi_n\\rangle\\,\\phi_n$ 的误差满足"
+    },
+    {
+      "type": "math",
+      "latex": "\\|f - f_\\alpha^\\delta\\|_{L^2(r\\,dr)} \\le \\frac{C\\,\\alpha}{\\sigma_{N(\\alpha)}}\\,\\|f\\|_{L^2} + \\frac{\\sigma_{N(\\alpha)}}{\\alpha}\\,\\|\\delta\\|, \\quad N(\\alpha) := \\min\\{n: \\sigma_n \\le \\alpha\\}. \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (3) 给出了截断的偏差-方差分解。当 $\\alpha$ 按 $\\alpha \\sim \\sigma_{N^*}\\,\\sqrt{\\|\\delta\\|}$ 选取时，截断索引 $N^*$ 由 $\\sigma_{N^*} \\approx \\|\\delta\\|^{1/2}$ 决定，对应偏差与方差达到平衡。该截断准则相较 L 曲线与 Morozov 偏差原理的优势在于其解析性——无需对残差做数值搜索。"
+    },
+    {
+      "type": "p",
+      "text": "在算法实现上，我们采用快速 Hankel 变换 (Quasi-Fast Hankel Transform) 在 $\\mathcal{O}(N\\log N)$ 复杂度内将测量投影到 Bessel 基，避免了离散正交化的数值不稳定性。讨论: 与传统离散网格上的 Tikhonov 正则化相比，Bessel 基截断在 (i) 解析性（不依赖网格分辨率）、(ii) 径向分辨率可控（截断索引 $N$ 直接对应径向频率上限）、(iii) 噪声鲁棒性（奇异值序列有显式衰减规律）三个维度上具有本质优势。其代价是 Bessel 基仅在柱对称问题中天然定义，对非径向非齐次源需要混合 Fourier-Bessel 基展开。"
+    },
+    {
+      "type": "p",
+      "text": "结论: Hankel 变换算子的奇异函数系显式由 Bessel 零点确定，使得贝塞尔光束逆源重构拥有了一类超越代数离散方法的解析正则化工具。该思路可推广至螺旋 Bessel 基（角动量反演）、高阶 Bessel 模（多极子反演）以及多波长贝塞尔层析融合。"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "id": "irls-curvature-collapse",
+  "title": "迭代重加权最小二乘（IRLS）在稀疏逆问题中的收敛曲率坍塌",
+  "date": "2025-09-20",
+  "tags": [
+    "正则化理论",
+    "稀疏",
+    "IRLS"
+  ],
+  "abstract": "分析 IRLS 权矩阵更新诱导的局部收敛率谱，提出同伦延拓的平滑剪切权策略将次线性提升至线性。",
+  "body": [
+    {
+      "type": "p",
+      "text": "迭代重加权最小二乘 (Iteratively Reweighted Least Squares, IRLS) 自 Lawson (1961) 提出以来, 一直是求解 $\\ell_p$ 范数 ($0 < p \\le 1$) 最小化问题的经典算法。其核心思想是在第 $k$ 步构造权矩阵 $W_k = \\mathrm{diag}(|x^{(k)}|^{p-2})$, 将非凸 (或非光滑) 的 $\\ell_p$ 目标替换为加权的 $\\ell_2$ 最小二乘:"
+    },
+    {
+      "type": "math",
+      "latex": "x^{(k+1)} = \\arg\\min_{x}\\,\\|W_k\\,x\\|_2^2 \\quad \\text{s.t.} \\quad A x = b, \\quad W_k = \\mathrm{diag}\\bigl(|x_i^{(k)}|^{p-2}\\bigr). \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "在压缩感知、稀疏信号恢复与高维统计中, IRLS 因其简洁的迭代形式与对稀疏诱导的渐近行为而被广泛使用。然而, 一个常被忽视的病态现象是: 当 $p \\to 0$ (逼近 $\\ell_0$ 极稀疏场景) 时, 权矩阵 $W_k$ 关于支撑集外分量 $x_i \\to 0$ 的反应极端非线性, 致使加权 Hessian 的局部曲率发生\"坍塌\"——条件数发散, 数值迭代出现\"粘滞\", 收敛速率从局部线性退化为次线性甚至停滞。这一现象在不适定反问题 $A \\in \\mathbb{R}^{m \\times n}, m \\ll n$ 下尤为突出, 因为欠采样进一步加剧了 $A^\\top W_k^\\top W_k A$ 的谱病态。本文研究的核心问题是: 如何定量刻画 IRLS 的曲率坍塌, 并设计修正策略以恢复线性收敛。 对加权正规方程 $A^\\top W_k^\\top W_k A x = A^\\top W_k^\\top W_k b$, 令 $H_k = A^\\top W_k^\\top W_k A$, 在 $x^{(k)}$ 附近对 $H_k$ 进行特征分解, 得到:"
+    },
+    {
+      "type": "math",
+      "latex": "\\kappa(H_k) = \\kappa(A^\\top A) \\cdot \\frac{\\max_i |x_i^{(k)}|^{2p-4}}{\\min_i |x_i^{(k)}|^{2p-4}} \\to \\infty \\quad \\text{as} \\quad \\min_i |x_i^{(k)}| \\to 0. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\kappa(A^\\top A) = \\sigma_1^2(A) / \\sigma_n^2(A)$ 是测量矩阵 $A$ 的本征条件数。当支撑外分量 $|x_i| \\to 0$ 时, 因子 $|x_i|^{2p-4}$ 以 $O(|x_i|^{-(4-2p)})$ 速率发散, 直接导致 $H_k$ 病态。从优化景观角度, 这意味着在零分量附近, 目标函数 $\\|x\\|_p^p$ 的二阶曲率趋近于零, 致使一阶梯度方向失去局部判别能力, 迭代被迫沿\"几乎平坦\"的盆地下滑, 表现为收敛速度急剧下降。 为克服上述困难, 我们提出结合同伦延拓的平滑剪切权策略: 将硬阈值 $w_i(x_i) = |x_i|^{p-2}$ 替换为带下界 $\\epsilon$ 的\"剪切权\":"
+    },
+    {
+      "type": "math",
+      "latex": "w_i^\\epsilon(x_i) = \\max(\\epsilon, |x_i|)^{p-2}, \\quad \\epsilon^{(k)} = \\epsilon_0 \\, e^{-\\beta k}, \\quad k = 0, 1, 2, \\dots \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\epsilon^{(k)}$ 随迭代指数衰减, 从初始 $\\epsilon_0$ 缓慢趋近于零。 这一设计在早期迭代提供强正则化以保证算法的全局稳定性, 在后期迭代逐步恢复稀疏诱导能力。 我们的收敛性分析证明: 当 $\\epsilon_0 = O(\\|x^\\dagger\\|_\\infty)$ 且 $\\beta = O(\\sigma_n(A)^2)$ 时, 上述剪切权 IRLS 在 $k \\ge O(\\log(1/\\epsilon))$ 步后进入线性收敛阶段, 收敛常数 $c = 1 - \\sigma_n^2(A) / (\\|A\\|^2 + \\epsilon_0^{2-p})$。 在算法层面, 平滑剪切权可与 ADMM 自然结合, 形成对偶-原始混合 IRLS-ADMM:"
+    },
+    {
+      "type": "math",
+      "latex": "x^{k+1} = \\bigl(A^\\top \\mathrm{diag}(w^\\epsilon(x^k)) A + \\rho I\\bigr)^{-1} (A^\\top \\mathrm{diag}(w^\\epsilon(x^k)) b + \\rho (z^k - u^k)), \\quad z^{k+1} = \\mathcal{S}_{\\lambda/\\rho}(x^{k+1} + u^k), \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "更深入地, 平滑剪切权的衰减速率 $\\beta$ 与测量矩阵 $A$ 的相干性、噪声水平以及目标稀疏度 $s$ 之间存在精细的依赖关系。 我们推导出在 Gaussian 测量下, 取得 $\\|x^k - x^\\dagger\\|_2 = O(\\sigma_n(A)^2 \\cdot \\delta_s)$ 的最优 $\\beta^\\ast$ 满足 $\\beta^\\ast = O(\\log(m) / s)$, 即对越稀疏的信号, 同伦衰减需要越慢以避免早期支撑错配。 这一发现与 LASSO 同伦 (LARS) 的参数轨迹分析在结构上完全同构, 揭示了 IRLS 与 LASSO 在深层的数学等价性。 展望未来, 将平滑剪切权策略与深度展开网络结合, 用神经网络参数化 $\\beta$ 与 $\\epsilon_0$ 的衰减策略, 是稀疏反演通向自适应正则化的可行路径, 对动态 MRI、稀疏角度 CT 等\"快数据\"场景具有直接应用价值。"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "dip-implicit-regularization",
+  "title": "深层生成网络先验（Deep Image Prior）的隐式正则化机制：参数化欠拟合",
+  "date": "2025-03-08",
+  "tags": [
+    "计算成像",
+    "正则化",
+    "DIP"
+  ],
+  "abstract": "证明卷积网络结构赋予参数化映射一种谱偏，动力学等价于具有自适应停止准则的迭代 Tikhonov。",
+  "body": [
+    {
+      "type": "p",
+      "text": "深度图像先验 (Deep Image Prior, DIP) 是 Ulyanov 等人在 2018 年发现的一个反直觉现象: 一个未经训练的、参数随机初始化的卷积网络 $f_\\theta(z)$, 仅通过最小化数据保真度 $\\|A f_\\theta(z) - y\\|^2$, 就能在去噪、超分辨、修复等逆问题中获得惊人合理的结果。这一现象表明, 网络的结构本身 (而非其学习到的权重) 充当了某种先验, 我们将其称为\"参数化欠拟合\" (parametrized underfitting)。"
+    },
+    {
+      "type": "p",
+      "text": "我们越过经验观察, 从神经切线核 (Neural Tangent Kernel, NTK) 理论出发, 严格论证 DIP 的隐式正则化机制。设 $f_\\theta$ 为参数化映射, 考虑梯度下降 $\\theta^{k+1} = \\theta^k - \\eta \\nabla_\\theta \\|A f_\\theta - y\\|^2$ 在初始参数 $\\theta^0$ 附近的线性化动力学:"
+    },
+    {
+      "type": "math",
+      "latex": "f_{\\theta^k}(z) \\approx f_{\\theta^0}(z) + J_f(\\theta^0)\\,(\\theta^k - \\theta^0), \\quad \\mathrm{NTK}(\\theta) = J_f(\\theta)^\\top J_f(\\theta). \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "NTK 理论 (Jacot et al., 2018) 表明, 在无限宽网络极限下, $\\mathrm{NTK}$ 在训练过程中保持近似常数, 训练动力学可由 $K \\theta_k \\approx y$ 的核回归显式描述。在有限宽度 (但深度足够) 的卷积网络中, $\\mathrm{NTK}$ 具有以下关键的频谱性质:"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{NTK}(\\theta)\\,v = \\sum_i \\lambda_i(\\theta)\\, \\langle v, \\phi_i\\rangle\\, \\phi_i, \\quad \\lambda_i(\\theta) \\sim i^{-\\alpha}, \\quad \\alpha \\approx 1.2 - 1.8. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\{\\phi_i\\}$ 是 $\\mathrm{NTK}$ 的特征函数, $\\lambda_i$ 是对应的特征值, 其衰减速率 $\\alpha$ 是网络结构 (卷积核大小、深度、跳跃连接) 的函数。经验上, 卷积网络的 $\\alpha$ 略大于 $1$, 这意味着 $\\mathrm{NTK}$ 的高频特征值相对低频更早衰减为零, 即网络输出对高频参数扰动不敏感。这一谱偏的物理意义极为深刻: 在梯度下降的前若干步, 残差 $\\|A f_\\theta - y\\|^2$ 沿 NTK 的低频方向优先下降, 即网络输出首先拟合数据中的低频分量; 若此时停止迭代, 输出将仅含低频结构, 这正是数据中\"图像\"应有的特征。换言之, 卷积网络的结构偏置为问题提供了天然的低通正则化。"
+    },
+    {
+      "type": "p",
+      "text": "我们将上述机制与经典的 Tikhonov 正则化对照。利用 NTK 的谱分解, 在迭代 $k$ 时的解可表示为谱滤波形式:"
+    },
+    {
+      "type": "math",
+      "latex": "f_{\\theta^k} = \\sum_{i=1}^r \\frac{1 - (1 - \\eta\\,\\lambda_i)^k}{\\lambda_i}\\, \\langle A^\\top y, \\phi_i\\rangle\\, \\phi_i, \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中滤波函数 $g_k(\\lambda) = (1 - (1 - \\eta\\,\\lambda)^k)/\\lambda$ 是典型的 Tikhonov 型低通, 截断频率由 NTK 特征值谱的衰减决定。当 $k \\to \\infty$ 时, $g_k \\to 1/\\lambda_i$ (即伪逆), 但通常在 $k \\sim O(1/\\sqrt{\\sigma})$ 时停止, 此时 $g_k$ 等价于显式 Tikhonov 正则化 $\\lambda_{\\mathrm{eff}} \\sim 1/k$。关键结论: DIP 框架中所谓的\"早停\", 在数学上等价于选择正则化参数 $\\alpha = 1/k$, 但其自适应性体现在: 不同的网络结构自动产生不同的 NTK 谱, 因此最优 $k$ 也因结构而异。换言之, DIP 是把正则化参数的选择从标量 $\\alpha$ 转移到了网络超参数设计上。"
+    },
+    {
+      "type": "p",
+      "text": "讨论: DIP 的\"参数化欠拟合\"机制与显式正则化 (如 Tikhonov、TV) 有显著区别。显式正则化通过人工设计的范数或半范数约束解, 其偏置完全由设计者控制, 但缺乏对复杂自然图像的适应性; DIP 则通过 NTK 的隐式谱偏获得正则化, 其偏置由网络结构内生地决定, 但难以精确控制。早停作为隐式正则化器, 其最优时机高度依赖具体问题与网络, 缺乏理论的先验指导, 这是 DIP 在实践中易过早拟合噪声的原因。本文以 NTK 理论为基础, 严格证明了 DIP 是具有自适应停止准则的迭代 Tikhonov 正则化的参数化实现, 其正则化强度由 NTK 谱的衰减速率 $\\alpha$ 唯一决定。这一认识为 DIP 的网络结构选择 (深度、宽度、跳跃连接) 提供了理论指导, 也为将该方法与显式正则化 (例如结合 TV 显式惩罚 NTK 频谱的高频部分) 开辟了路径。"
+    }
+  ]
+}

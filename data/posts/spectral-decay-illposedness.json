@@ -1,0 +1,57 @@
+{
+  "id": "spectral-decay-illposedness",
+  "title": "谱的消亡：紧算子奇异值衰减如何定义了不适定性",
+  "date": "2026-06-20",
+  "tags": [
+    "不适定逆问题",
+    "紧算子",
+    "奇异值"
+  ],
+  "abstract": "从奇异值衰减速率出发，重新审视不适定性的等级划分与正则化收敛率上界。",
+  "body": [
+    {
+      "type": "p",
+      "text": "不适定问题常被通俗地描述为\"对数据的连续依赖性不成立\"，但这一定性描述掩盖了算子谱结构所蕴含的定量信息。我们必须超越Hadamard三要素的初等判据，进入紧算子奇异值系统（Singular Value System, SVS）的精细几何。设 $A: X \\to Y$ 为线性紧算子，作用于Hilbert空间之间的映射，则 $A$ 可由其奇异值分解（Singular Value Decomposition, SVD）唯一表征：$Ax = \\sum_{i=1}^{\\infty} \\sigma_i \\langle x, v_i \\rangle u_i$，其中 $\\{\\sigma_i\\}$ 是一列按非增排列收敛于零的正实数，$\\{u_i\\}$、$\\{v_i\\}$ 分别为 $Y$ 与 $X$ 中的标准正交系。"
+    },
+    {
+      "type": "math",
+      "latex": "\\sigma_i(A) \\downarrow 0, \\quad i \\to \\infty, \\qquad \\|A\\|_{\\mathrm{HS}}^2 = \\sum_{i=1}^{\\infty} \\sigma_i^2 < \\infty. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "问题的\"不适定程度\"由序列 $\\sigma_i \\to 0$ 的衰减速率精确决定，这一断言根植于Picard定理及其推论。Picard条件断言：方程 $Ax = y$ 可解且解 $x^{\\dagger}$ 在 $\\mathcal{R}(A^{\\ast})$ 中的最小范数解可表示为 $x^{\\dagger} = \\sum_{i} \\sigma_i^{-1} \\langle y, u_i \\rangle v_i$。当且仅当Picard条件 $\\sum_{i} \\sigma_i^{-2} |\\langle y^{\\delta}, u_i \\rangle|^2 < \\infty$ 成立时，该解对噪声 $y^{\\delta} = y + \\delta \\xi$ 的扰动是有界的。然而，真实解的频谱系数 $\\langle x^{\\dagger}, v_i \\rangle$ 与 $\\sigma_i$ 的耦合方式——即源条件——才真正决定了正则化所能达到的收敛阶。"
+    },
+    {
+      "type": "p",
+      "text": "若奇异值呈多项式型衰减 $\\sigma_i = O(i^{-p})$，$p>0$，则称 $A$ 属于多项式型不适定类；此时Hölder型源条件 $x^{\\dagger} \\in \\mathcal{R}((A^{\\ast}A)^{\\mu})$ 在 $\\mu = p - 1/2$ 附近的可识别精度给出了最优收敛率"
+    },
+    {
+      "type": "math",
+      "latex": "\\sup_{\\alpha>0}\\,\\inf_{x\\,:\\,Ax=y}\\,\\|x_\\alpha - x^{\\dagger}\\| \\le C\\,\\delta^{\\frac{2\\mu}{2\\mu+1}}, \\quad \\sigma_i \\sim i^{-p},\\; \\mu = p - \\tfrac{1}{2}. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "若 $\\sigma_i = O(e^{-ci})$，则对应解析型源条件：$x^{\\dagger}$ 的解析延拓在某复带状区域内有界。该情形下理论上可达到对数阶甚至接近指数级收敛 $\\|x_\\alpha - x^{\\dagger}\\| = O(e^{-c' (\\log(1/\\delta))^{1/2}})$。这种\"困难等级\"的划分——指数型、对数型、多项式型——构成了反问题谱理论的核心分类法。值得注意的是，分类完全由算子 $A$ 自身决定，独立于后验正则化策略的选择：任何算法都无法突破 $\\sigma_i$ 衰减所封顶的精度上限，这是信息论意义上的根本性约束。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathcal{R}((A^{\\ast}A)^{\\mu}) = \\left\\{ x = \\sum_{i} \\sigma_i^{2\\mu} c_i v_i : \\sum_i c_i^2 < \\infty \\right\\}. \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "由此引出对算法设计的根本告诫：当我们选用某种具体正则化（如Tikhonov、截断SVD、Landweber迭代、共轭梯度法）时，正则化参数 $\\alpha$（或截断索引 $k$、迭代步数 $n$）所对应的极限可达精度被 $\\sigma_i$ 的衰减所严格封顶。盲目追求精细的迭代格式、复杂的滤波多项式或深度的神经网络架构而无关于谱结构的先验信息，往往是徒劳的——任何算法的误差下界都服从Bauer-Fike型不等式所施加的硬性约束："
+    },
+    {
+      "type": "math",
+      "latex": "\\inf_{\\alpha(\\delta)}\\,\\sup_{x^{\\dagger}\\in \\mathcal{R}((A^{\\ast}A)^{\\mu})}\\,\\|x_{\\alpha} - x^{\\dagger}\\| \\ge c\\,\\delta^{\\frac{2\\mu}{2\\mu+1}}, \\quad \\delta \\to 0. \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "上述讨论为实践提供了清晰的方法论指引：在着手设计正则化方案之前，必须首先辨识问题的谱型。通过对 $A$ 的离散化矩阵进行SVD并拟合 $\\log \\sigma_i$ 关于 $\\log i$ 的渐近斜率，可以鲁棒地估计衰减指数 $p$；结合对解的先验光滑性假设，即可预判最优收敛率，并据此选择与该速率匹配的正则化器。这一\"谱诊断优先\"的工程范式，将不适定性的抽象分类转化为可计算的诊断流程，是现代反问题理论对数值实践最重要的方法论贡献之一。"
+    }
+  ]
+}

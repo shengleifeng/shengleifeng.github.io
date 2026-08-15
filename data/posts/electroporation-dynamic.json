@@ -1,0 +1,60 @@
+{
+  "id": "electroporation-dynamic",
+  "title": "电穿孔过程中组织电导率时变反演的动态正则化",
+  "date": "2024-10-12",
+  "tags": [
+    "不适定逆问题",
+    "动态反演",
+    "电穿孔"
+  ],
+  "abstract": "对状态转移施以群稀疏正则化，对平稳期施以时域平滑，结构化惩罚将反演转化为变化点检测。",
+  "body": [
+    {
+      "type": "p",
+      "text": "电穿孔 (electroporation) 过程中, 外加脉冲电场使细胞膜脂质双层出现纳米级瞬时孔洞, 导致组织电导率 $\\sigma(x,t)$ 在毫秒尺度上发生 1-3 个数量级的不可逆跳变。这一过程在不可逆电穿孔 (IRE) 消融与基因电转染 (electro-gene-transfer) 中具有核心地位, 但其内部物理机制 (孔洞成核-扩张-稳定) 使 $\\sigma$ 的时变行为既非线性又分段光滑。直接对 $\\sigma(x,t)$ 作连续场反演是经典的高度不适定逆问题: 时间分辨率需求 (μs 级) 与 EIT 测量的稀疏空间采样 (通常 16-256 电极) 形成尖锐矛盾。本文不采用快照式反演, 而是将 $\\sigma$ 的时间演化约束为具有切换机制的常微分方程, 通过结构化惩罚将反问题转化为可解的变化点检测 + 跳变量估计。"
+    },
+    {
+      "type": "p",
+      "text": "基于 Kramer 跃迁理论与 Schwarz-Saltikov 胞模型, 我们将 $\\sigma(x,t)$ 参数化为"
+    },
+    {
+      "type": "math",
+      "latex": "\\sigma(x,t) = \\sigma_{\\mathrm{base}}(x) + \\sum_{k=1}^{K} \\Delta\\sigma_k(x)\\,H(t-t_k(x))\\,\\exp(-(t-t_k(x))/\\tau_k(x)), \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $H$ 为 Heaviside 阶跃函数, $t_k(x)$ 为第 $k$ 次电穿孔跳变时刻, $\\Delta\\sigma_k(x)$ 为跳变幅度, $\\tau_k(x)$ 为孔洞松弛时间。该参数化的物理意义在于: 一次脉冲场强超过临界阈值 $\\sigma_{\\mathrm{crit}}$ 时, 膜通透性发生阶跃, 然后以指数 $\\tau_k$ 弛豫至亚稳态。该模型中未知参数为 $(t_k,\\Delta\\sigma_k,\\tau_k)$ 在 $N_x$ 个像素上的分布, 总自由度 $3KN_x$ 远小于连续场 $\\sigma(x,t)$ 的 $N_x N_t$。"
+    },
+    {
+      "type": "p",
+      "text": "对于不同时段, 我们施加结构化群稀疏正则化: 平稳期 ($\\dot{\\sigma}\\approx 0$) 施以时域平滑 $\\alpha\\|\\partial_t\\sigma\\|^2$ 以阻止噪声放大, 跳变期 (围绕 $t_k$ 的窄窗) 施以群稀疏 $\\beta\\|\\Delta\\sigma\\|_{\\ell_{2,1}}$——即鼓励 $\\Delta\\sigma_k$ 在空间上呈“区域跳变”而非“逐点跳变”, 这与组织电穿孔的同步物理一致。我们的反演目标为"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{\\theta=(t_k,\\Delta\\sigma_k,\\tau_k)}\\,\\tfrac{1}{2}\\|\\mathcal{F}(\\sigma(\\theta))-V\\|_{\\mathrm{EIT}}^2 + \\alpha\\int|\\partial_t\\sigma|^2\\,dt + \\beta\\sum_{k}\\|\\Delta\\sigma_k\\|_{2,1} + \\gamma\\,\\mathrm{TV}_x(\\sigma_{\\mathrm{base}}), \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathcal{F}$ 为 EIT 前向算子 (含完整的非线性 Poisson 方程 $–\\nabla\\cdot(\\sigma\\nabla u)=I$ 与接触阻抗), $V$ 为边界电压测量, $\\mathrm{TV}_x$ 鼓励基础电导率场分段常数。该目标函数在 $\\theta$ 上是非凸非光滑的, 我们通过 ADMM 在 (a) 变化点参数 $\\{t_k\\}$ (b) 跳变幅度场 $\\{\\Delta\\sigma_k(x)\\}$ (c) 光滑参数 $\\{\\sigma_{\\mathrm{base}},\\tau_k\\}$ 三组变量间分裂迭代。关键步骤是 $t_k$ 的更新采用动态规划 (Viterbi-like), 在时序上追踪所有像素的最优跳变序列。"
+    },
+    {
+      "type": "p",
+      "text": "理论上, 我们证明该结构化反演在变化点数量 $K\\ll N_t$ 时具有统计可辨识性。具体地, 在 $\\sigma_{\\mathrm{crit}}>3\\sigma_{\\mathrm{base}}$ 的强非线性区间, 跳变信号在 EIT 数据中产生 $\\mathcal{O}(1)$ 的特征响应, 远超 $\\delta$ 量级噪声, 因而可被检测。在 $K$ 已知时, 反演的均方误差满足"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathbb{E}\\,\\|\\hat{\\sigma}-\\sigma^{\\dagger}\\|_{L^2}^2 \\le C_1\\,\\delta^2 + C_2\\,\\frac{K\\log N_x}{N_t}, \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "即当采样时间 $N_t\\gg K\\log N_x$ 时, 误差以 $\\delta^2$ 为主导, 达到半参数效率。当 $K$ 未知时, 我们采用 SURE (Stein 无偏风险估计) 的扩展形式在 $K\\in\\{1,2,\\ldots,K_{\\max}\\}$ 中选择最优, 避免了对 $K$ 的先验依赖。"
+    },
+    {
+      "type": "p",
+      "text": "讨论与权衡: 该方法将不适定的连续时变反演正则化为时间分割点的检测与常量估计的交替, 大幅降低自由度, 数值稳定性显著优于直接对 $\\sigma(x,t)$ 作 4D Tikhonov。然而, 当电穿孔机制为渐变式 (即孔洞缓慢扩张) 而非阶跃式时, Heaviside 假设将带来模型偏差, 此时应将 $\\sigma$ 建模为有限个 logistic 函数的叠加 $H_{\\mathrm{soft}}(t; t_k, s_k)=\\tfrac{1}{1+e^{-s_k(t-t_k)}}$, 以 $s_k$ 编码跳变斜率。另一权衡在于: 群稀疏 $\\|\\Delta\\sigma_k\\|_{2,1}$ 鼓励空间连通区域, 但当存在多个独立电穿孔事件 (如多通道脉冲) 时, 需引入更细粒度的 group 结构 (按电极分组)。结论上, 动态正则化为电穿孔监测提供了一种物理一致的可计算反演范式, 后续可与 PINN 物理约束结合以减少对 EIT 数据的依赖, 并推广至心脏消融与神经调控等动态电生理成像场景。"
+    }
+  ]
+}

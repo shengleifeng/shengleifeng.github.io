@@ -1,0 +1,57 @@
+{
+  "id": "landweber-semi-convergence",
+  "title": "Landweber 迭代的迟滞与半收敛：迭代次数作为正则化参数",
+  "date": "2026-05-16",
+  "tags": [
+    "迭代正则化",
+    "Landweber",
+    "谱滤波"
+  ],
+  "abstract": "揭示 Landweber 迭代的半收敛现象与谱滤波器结构，以及它对 Krylov 方法的内在呼唤。",
+  "body": [
+    {
+      "type": "p",
+      "text": "Landweber迭代 $x^{k+1} = x^k + \\tau A^{\\top}(y - Ax^k)$ 是最朴素的梯度下降格式，最初为良态最小二乘问题而设计。然而，将其应用于不适定逆问题时，却表现出令人惊异的\"半收敛\"（semi-convergence）现象：随着迭代次数 $k$ 的增加，迭代解 $x^k$ 先逐步逼近真解 $x^{\\dagger}$，达到最优后发散，最终在极限 $k \\to \\infty$ 时退化为伪逆 $A^{\\dagger} y$ 的有偏估计。这一现象蕴含着深刻的滤子理论，迭代次数 $k$ 实际上扮演了正则化参数的角色。"
+    },
+    {
+      "type": "math",
+      "latex": "x^{k+1} = x^k + \\tau A^{\\top}(y - Ax^k), \\quad 0 < \\tau < \\frac{2}{\\sigma_{\\max}^2(A)}. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "从谱分析的角度，Landweber迭代可被精确解构为对每个奇异值的标量滤波。设 $A$ 的奇异值分解为 $A = \\sum_i \\sigma_i u_i v_i^{\\top}$，则 $x^k$ 的谱展开为"
+    },
+    {
+      "type": "math",
+      "latex": "x^k = \\sum_{i=1}^{\\infty} f_k(\\sigma_i)\\,\\frac{\\langle y, u_i\\rangle}{\\sigma_i}\\,v_i, \\quad f_k(\\sigma) = 1 - (1 - \\tau\\sigma^2)^k. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "滤波器 $f_k$ 是关于 $\\sigma$ 的单调递增函数：在大奇异值处 $f_k(\\sigma) \\approx 1$（几乎完全恢复对应分量），在小奇异值处 $f_k(\\sigma) \\approx k\\tau\\sigma^2$（呈二次型抑制）。这正是截断SVD的软化（soft-thresholded）版本：$f_k$ 在 $\\sigma = \\mathcal{O}(k^{-1/2})$ 附近从近零过渡到近一，过渡宽度正比于 $k^{-1/2}$。如此，半收敛的最优迭代次数 $k^{\\star}$ 即可通过对源条件的精细分析得到显式下界。"
+    },
+    {
+      "type": "p",
+      "text": "饱和效应（saturation effect）是Landweber迭代的根本性局限：对于多项式型不适定问题，$f_k$ 的渐近行为 $f_k(\\sigma) \\sim k\\tau\\sigma^2$ 在小奇异值处过于\"温和\"，无法提供对噪声的快速抑制。具体而言，若 $x^{\\dagger} \\in \\mathcal{R}((A^{\\ast}A)^{\\mu})$，则Landweber的最优收敛率仅为"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_k \\,\\|x^k - x^{\\dagger}\\| = \\mathcal{O}\\left( \\delta^{\\frac{2\\mu}{2\\mu+1}} \\right), \\quad \\text{with } k^{\\star} \\sim \\delta^{-\\frac{2}{2\\mu+1}}, \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "这一收敛率与Tikhonov正则化的最优阶相同，但Landweber需要 $\\mathcal{O}(\\delta^{-2/(2\\mu+1)})$ 次迭代才可达到，计算成本随噪声水平 $\\delta$ 的减小而急剧增长。饱和效应的本质是Landweber滤波器族 $\\{f_k\\}$ 局限于二项式 $(1-(1-\\tau\\sigma^2)^k)$ 的形式，其自由度过低——只有迭代步数 $k$ 一个超参数。要突破这一局限，需要更一般的多项式滤波器族，这正是Krylov子空间方法的出发点。"
+    },
+    {
+      "type": "math",
+      "latex": "p_k(\\sigma) = \\prod_{j=1}^{k} (1 - \\tau\\sigma_j^2), \\quad \\text{vs.} \\quad q_k(\\sigma) = \\sum_{j=0}^{k-1} c_j \\sigma^{2j}. \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "共轭梯度法（CG）应用于正规方程（CGNE）以及广义最小残差（GMRES）等Krylov方法产生的滤波器具有更灵活的结构：其滤波器系数由Chebyshev多项式或Ritz值的极小化问题决定，可在谱的特定区间内构造更陡峭的滤波曲线。这种自由度的提升使得Krylov方法在数值上远快于Landweber，并能在不增加迭代次数的前提下提供更优的半收敛行为。理论上，CGNE对源条件 $\\mu$ 的最优收敛率与Landweber相同（均受 $\\delta^{2\\mu/(2\\mu+1)}$ 限制），但其滤波器的频谱选择性更佳，对不适定程度的\"容忍性\"更强。我们将Landweber视为谱滤波正则化的\"教学示例\"，将Krylov方法视为其在高维实践中的工程化升级，二者在滤子理论框架下是统一而可比较的。"
+    }
+  ]
+}

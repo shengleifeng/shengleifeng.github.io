@@ -1,0 +1,52 @@
+{
+  "id": "smlm-poisson-trap",
+  "title": "超分辨成像中的病态光子计数：极大似然估计的泊松噪声正则化陷阱",
+  "date": "2026-01-31",
+  "tags": [
+    "计算成像",
+    "正则化",
+    "泊松噪声"
+  ],
+  "abstract": "揭示信号依赖方差下常数方差正则项的偏差，介绍 Anscombe 域正则化框架。",
+  "body": [
+    {
+      "type": "p",
+      "text": "单分子定位显微（SMLM）将单分子荧光事件建模为泊松光子计数过程 $y \\sim \\mathrm{Poisson}(I\\theta)$,其中 $I$ 为光学传递算子,$\\theta$ 为待重建的发射密度场。其对数似然 $\\ell(\\theta) = \\sum_i (y_i \\log\\hat y_i - \\hat y_i)$ 在 Fisher 信息意义下提供了自然的数据保真度量,但与高斯框架不同,其方差 $\\mathrm{Var}[y_i] = \\hat y_i$ 与信号强度本身耦合。"
+    },
+    {
+      "type": "p",
+      "text": "本文揭示一个被长期忽略的陷阱:若沿用常数方差的 Tikhonov 正则化 $\\lambda \\|\\theta\\|_2^2$,则在低光区域(信号小、方差小)正则化权重 $\\lambda$ 相对过大,导致过度平滑;在高光区域(信号大、方差大)权重相对过小,引发振铃伪影。这是经典的最大似然-最大后验不对齐现象,其根源在于高斯先验与泊松似然在变分意义上的协变性被破坏。"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{\\theta \\ge 0}\\, -\\sum_i \\bigl(y_i \\log\\hat y_i - \\hat y_i\\bigr) + \\lambda \\,\\|\\theta\\|_2^2, \\quad \\hat y_i = (I\\theta)_i",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "我们提出基于方差稳定化变换(VST)的 Anscombe 域正则化框架。Anscombe 变换 $z = 2\\sqrt{y + 3/8}$ 将泊松变量映射为渐近标准高斯变量,从而在变换域 $z$ 上施加具有均匀统计意义的 Tikhonov 罚项成为合理选择。"
+    },
+    {
+      "type": "math",
+      "latex": "z = 2\\sqrt{y + 3/8}, \\quad z \\,|\\,\\theta \\xrightarrow{d}\\, \\mathcal{N}(\\mu(\\theta), 1), \\quad \\mu(\\theta) = 2\\sqrt{I\\theta + 3/8}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "进一步,我们在 Anscombe 域引入 Bregman 距离正则化以避免逆变换 $\\hat y = (z/2)^2 - 3/8$ 引入的二次型偏差。令 $\\phi(\\theta) = \\theta \\log\\theta - \\theta$ 为泊松负对数似然的 Bregman 母函数,则广义 Bregman 距离 $D_\\phi(\\theta, \\theta^k)$ 提供了信号依赖的局部二次代理,等价于在每步以 $\\theta^k$ 为中心的 Fisher 信息加权范数。"
+    },
+    {
+      "type": "math",
+      "latex": "D_\\phi(\\theta, \\tilde\\theta) = \\sum_i \\Bigl[\\theta_i \\log\\frac{\\theta_i}{\\tilde\\theta_i} - \\theta_i + \\tilde\\theta_i\\Bigr] = \\tfrac{1}{2}\\,\\theta^{-1} \\, |\\theta - \\tilde\\theta|^2 + O(|\\theta - \\tilde\\theta|^3)",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**定理**(信号依赖正则化的最优性):在上述 Anscombe-Bregman 框架下,若 $\\theta^\\dagger$ 满足源条件 $\\theta^\\dagger \\in \\mathcal{R}(I^\\ast \\mathcal{F}^{\\mu/2})$($\\mu > 0$ 为光滑性指标),则正则化解 $\\theta_\\alpha$ 满足收敛率 $\\|\\theta_\\alpha - \\theta^\\dagger\\| = O(\\alpha^{\\mu/(2\\mu+1)})$,其常数与 $I\\theta^\\dagger$ 的方差梯度上界成反比。"
+    },
+    {
+      "type": "p",
+      "text": "**结论与展望**:本文论证了泊松逆问题中正则化权重必须依据 Fisher 信息而自适应调制的根本必要性。Anscombe-Bregman 框架以紧致且可计算的途径为光子计数成像提供了统计一致的正则化。后续研究将向多通道、彩色 SMLM 推广,并探索与基于分数的扩散先验的结合,实现从统计正则化向几何先验正则化的跃迁。"
+    }
+  ]
+}

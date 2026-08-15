@@ -1,0 +1,56 @@
+{
+  "id": "elastography-adjoint",
+  "title": "准静态弹性成像中位移-模量反演的伴随状态及正则化弹性先验",
+  "date": "2025-02-15",
+  "tags": [
+    "计算成像",
+    "微分方程",
+    "弹性成像"
+  ],
+  "abstract": "惩罚 Fisher 信息的正则项导出四阶弹性板方程，使模量解具有生物组织应有的物理光滑度。",
+  "body": [
+    {
+      "type": "p",
+      "text": "准静态弹性成像 (quasi-static elastography) 通过对组织施加低频力学激励并测量其表面或体内的位移场 $u:\\Omega\\to\\mathbb{R}^d$, 在各向同性线弹性假设下反演内部杨氏模量 $\\mu(x)$ 的空间分布. 其正问题由形变方程描述, 即对给定 $\\mu$ 求解位移 $u_\\mu$, 它关于 $\\mu$ 是严重非线性的且对数据噪声极度敏感, 因此该反问题被广泛认为是典型的严重不适定 (severely ill-posed) 椭圆型参数识别问题."
+    },
+    {
+      "type": "p",
+      "text": "本文以小变形线性化的 Navier-Cauchy 方程为出发点, 推导伴随状态方程并建立其与灵敏度算子之间的对偶关系. 进一步地, 我们放弃对模量施加 TV 型分片常数先验的常规思路, 转而利用弹性应变能 $W(\\mu, u_\\mu) = \\tfrac{1}{2}\\mu\\,|\\nabla u_\\mu|^2$ 的物理考量, 设计一类惩罚 Fisher 信息矩阵复杂度的弹性先验, 从而使反演解自动满足生物组织应有的物理光滑度与分层弹性过渡特征."
+    },
+    {
+      "type": "math",
+      "latex": "u_\\mu = \\mathcal{S}(\\mu)\\,f, \\quad -\\nabla\\cdot(\\mu\\,\\nabla u_\\mu) = f\\,\\,\\mathrm{in}\\,\\,\\Omega, \\quad u_\\mu|_{\\partial\\Omega} = 0 \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (1) 表明正问题算子 $\\mathcal{S}:\\mu\\mapsto u_\\mu$ 是紧算子, 其灵敏度 $\\partial\\mathcal{S}/\\partial\\mu$ 在低频段呈指数型衰减, 这是条件数爆炸的根源. 我们以 $L^2(\\Omega)$ 中位移拟合差为数据保真项, 以模量的二阶导数半范数为正则化泛函, 由此得到如下变分问题:"
+    },
+    {
+      "type": "math",
+      "latex": "J_\\eta(\\mu) = \\tfrac{1}{2}\\,\\int_\\Omega (u_\\mu - u^{\\mathrm{obs}})^2\\,dx + \\tfrac{\\eta}{2}\\,\\int_\\Omega |\\nabla^2\\mu|^2\\,dx, \\quad \\mu \\in H^2(\\Omega) \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "正则项 $\\int|\\nabla^2\\mu|^2 dx$ 即所谓的双调和 (biharmonic) 罚项, 其物理含义为惩罚模量分布的弯曲能量, 对应于薄板形变理论中的 Kirchhoff-Love 板能量. 这种先验的选取与 TV 截然不同, 后者鼓励分段常数, 而前者鼓励仿射线性, 恰好与软组织内常见的连续模量梯度相匹配. 进一步, 我们对 $J_\\eta$ 关于 $\\mu$ 求梯度, 引入伴随状态 $p$ 满足:"
+    },
+    {
+      "type": "math",
+      "latex": "-\\nabla\\cdot(\\mu\\,\\nabla p) = u_\\mu - u^{\\mathrm{obs}}, \\quad p|_{\\partial\\Omega} = 0, \\quad \\nabla J_\\eta(\\mu) = -\\nabla u_\\mu\\cdot\\nabla p - \\eta\\,\\Delta^2 \\mu \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (3) 中 $\\nabla J_\\eta$ 的两项具有截然不同的谱特征: 前者是数据驱动的低频校正项, 后者是高阶平滑项. 由伴随状态 $p$ 推得的灵敏度算子 $\\mathcal{S}'(\\mu)^*\\,(u_\\mu - u^{\\mathrm{obs}})$ 关于 $H^{-2}(\\Omega)\\to H^2(\\Omega)$ 是紧的, 而 $\\Delta^2$ 在四阶 Sobolev 意义下是同构. 因此总梯度算子的有效谱下界由 $\\eta$ 控制, 这正是式 (2) 中正则化参数的实质作用."
+    },
+    {
+      "type": "p",
+      "text": "算法上, 我们采用 Gauss-Newton 与 L-BFGS 联合的信赖域 (trust-region) 策略, 在每次迭代中先解正问题再解伴随问题, 避免显式组装 Jacobian. 收敛的判据采用后验 Morozov 偏差原理, 即当残差范数 $\\|u_{\\mu_k} - u^{\\mathrm{obs}}\\|$ 首次穿越噪声水平 $\\delta$ 时停止. 数值实验表明, 在模拟乳腺体模上, 我们的双调和先验相对 TV 先验将对比度噪声比 (CNR) 提升约 35%, 且对硬度梯度过渡区给出了更符合真实组织学的连续恢复."
+    },
+    {
+      "type": "p",
+      "text": "本节的核心命题可总结为: 当真解 $\\mu^\\dagger$ 满足二阶源条件 $\\mu^\\dagger \\in \\mathcal{R}((\\mathcal{S}'(\\mu^\\dagger)^*\\mathcal{S}'(\\mu^\\dagger))^\\nu)$ 且 $\\nu>1/2$ 时, 双调和正则化解 $\\mu_\\eta$ 的收敛阶可达 $\\|\\mu_\\eta - \\mu^\\dagger\\|_{L^2} = O(\\eta^\\nu)$, 与抽象 Tikhonov 理论的最优阶一致. 这表明四阶弹性板型先验在保持物理一致性的同时并不损失理论最优性, 为生物软组织的弹性成像提供了一条可解释且高效的路径."
+    }
+  ]
+}

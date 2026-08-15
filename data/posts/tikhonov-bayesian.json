@@ -1,0 +1,52 @@
+{
+  "id": "tikhonov-bayesian",
+  "title": "Tikhonov 正则化的贝叶斯\"幻象\"：被忽略的隐含假设",
+  "date": "2026-06-13",
+  "tags": [
+    "正则化理论",
+    "贝叶斯推断",
+    "Tikhonov"
+  ],
+  "abstract": "拆解 Tikhonov 解与高斯 MAP 等价的三个隐含前提，揭示其失效时的系统性偏差。",
+  "body": [
+    {
+      "type": "p",
+      "text": "将Tikhonov正则化解 $x_\\alpha = (A^{\\top}A + \\alpha I)^{-1}A^{\\top}y$ 解释为高斯先验下的最大后验（MAP）估计，在教学与文献中已近乎成为公理性陈述。然而，这一\"等价性\"本质上是一种结构脆弱的代数巧合，其成立依赖于多个常被忽视的隐含前提的同时满足。我们必须在严格统计推断的框架下审视这一论断，识别其失效的条件边界。"
+    },
+    {
+      "type": "math",
+      "latex": "x_\\alpha = \\arg\\min_{x}\\,\\tfrac{1}{2}\\|Ax - y\\|_{\\Sigma_\\epsilon^{-1}}^2 + \\tfrac{1}{2}\\|x\\|_{\\Sigma_x^{-1}}^2 = (A^{\\top}\\Sigma_\\epsilon^{-1}A + \\Sigma_x^{-1})^{-1}A^{\\top}\\Sigma_\\epsilon^{-1}y, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "第一个隐含假设是噪声协方差 $\\Sigma_\\epsilon$ 与先验协方差 $\\Sigma_x$ 必须在算子 $A$ 的奇异基下同时对角化。等价的陈述是：$[\\Sigma_\\epsilon, A^{\\top}A] = 0$ 且 $[\\Sigma_x, A^{\\top}A] = 0$。当 $\\Sigma_\\epsilon = \\sigma^2 I$、$\\Sigma_x = \\tau^2 I$ 时此条件平凡满足，由此退化为标量Tikhonov形式。但真实测量中的噪声往往有色——例如CT系统中的泊松-高斯混合、MRI的k空间非均匀采样——这使得 $\\Sigma_\\epsilon$ 与 $A$ 的奇异系统不交换，从而上述闭式解不再对应真正的MAP估计，而仅仅是某个加权最小二乘问题的解。"
+    },
+    {
+      "type": "p",
+      "text": "第二个隐含假设是观测算子 $A$ 必须是线性的。这是MAP与Tikhonov等价性最严格的约束：一旦观测涉及非线性的物理过程（如衍射、光声、饱和吸收），贝叶斯后验的似然项 $p(y|x)$ 不再是二次型，Tikhonov目标函数 $J_\\alpha(x) = \\|Ax - y\\|^2 + \\alpha \\|x - x_0\\|^2$ 就不再对应任何后验密度的负对数。即便我们坚持用Tikhonov作为优化工具，所得到的解也与真正的MAP估计存在系统偏差，且该偏差无法通过简单的参数调整消除。"
+    },
+    {
+      "type": "math",
+      "latex": "p(x|y) \\propto p(y|x)\\,p(x), \\quad \\log p(x|y) = -J_\\alpha(x) \\iff p(y|x)\\,p(x) = \\mathcal{N}(y; Ax, \\Sigma_\\epsilon)\\,\\mathcal{N}(x; x_0, \\Sigma_x). \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "第三个隐含假设是后验分布需近似对称，使得MAP（众数）与条件均值（后验期望）重合。这一条件在高维极限下由Bernstein-von Mises定理所保证——后验近似为高斯，其众数与均值渐近一致——但在低维、强偏态或先验高度信息性的场景下，二者的差距可以任意大。具体而言，若先验 $\\Sigma_x$ 的某个特征方向上先验方差极小，相应的后验边缘分布将呈现明显的偏斜甚至多峰结构，此时Tikhonov解将系统性偏离后验期望的认知中心，造成所谓\"先验驱动偏差\"。"
+    },
+    {
+      "type": "p",
+      "text": "实践中更稳健的做法是放弃对\"MAP=Tikhonov\"等价性的迷信，转而采用以下层次化策略：(1) 显式写出广义Tikhonov泛函 $J_\\alpha(x) = \\|Ax - y\\|_{\\Sigma_\\epsilon^{-1}}^2 + \\alpha \\mathcal{R}(x)$，其中 $\\mathcal{R}$ 是任意的Banach空间正则项；(2) 当 $\\Sigma_\\epsilon$、$\\Sigma_x$ 不可交换时，回退到MCMC（如Hamiltonian Monte Carlo）或变分推断（如ADVI）以获得真实的后验样本或近似后验分布；(3) 在不确定性量化的下游任务中，必须基于完整的后验而非单一的MAP点估计进行决策，否则将引入因忽略高阶矩而导致的系统性统计偏差。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathbb{E}[x|y] = \\int x\\,p(x|y)\\,dx \\neq \\arg\\max_{x}\\,p(x|y), \\quad \\text{when } p(x|y) \\notin \\text{symmetric}. \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "综上，Tikhonov与贝叶斯MAP之间的\"等价性\"应被视为一种在窄义前提下的精确数学对应，而非可随意迁移的统计诠释。理解这一边界不仅是理论严谨性的要求，更对工程实践有直接指导意义：在医学成像、雷达、地球物理反演等需要提供完整不确定性信息的应用场景中，盲目依赖Tikhonov点估计将导致对置信区间的低估，可能引发严重后果。我们倡导将Tikhonov视为一种计算便利的最优化工具，而非统计推断的替代品——这一认识论上的拨乱反正，是现代计算反演走向科学严谨性的必要一步。"
+    }
+  ]
+}

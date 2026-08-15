@@ -1,0 +1,51 @@
+{
+  "id": "tensor-decomposition",
+  "title": "张量分解在多维成像逆问题中的应用：Tucker 与 CP 作为结构化正则",
+  "date": "2024-11-09",
+  "tags": [
+    "计算成像",
+    "张量分解",
+    "结构化正则"
+  ],
+  "abstract": "Tucker 核范数等同于在张量各展开模态上独立执行矩阵核范数正则化，讨论其可分离性失效场景。",
+  "body": [
+    {
+      "type": "p",
+      "text": "高光谱成像 (HSI)、动态 MRI、多通道 CT 等多维成像模态产生的本质上是三阶乃至更高阶的张量数据 $\\mathcal{X}\\in\\mathbb{R}^{n_1\\times n_2\\times\\cdots\\times n_d}$, 其中各模态分别承载空间、谱、时间或偏振等多重物理维度。直接将这些数据展平为向量再施以经典稀疏或低秩正则化, 将破坏其固有的多线性结构, 损失大量先验。本文主张以张量分解 (Tucker 与 CP) 作为结构化正则化器, 它将“低维潜因子”的物理直觉与“秩约束”的数学严格性统一在同一框架中。"
+    },
+    {
+      "type": "p",
+      "text": "Tucker 分解将 $\\mathcal{X}$ 写为 $\\mathcal{X}=\\mathcal{G}\\times_1 U^{(1)}\\times_2 U^{(2)}\\cdots\\times_d U^{(d)}$, 其中 $\\mathcal{G}\\in\\mathbb{R}^{r_1\\times\\cdots\\times r_d}$ 为核张量, $U^{(k)}\\in\\mathbb{R}^{n_k\\times r_k}$ 为各模态的因子矩阵 (列正交)。当 $\\mathrm{rank}_{\\mathrm{Tucker}}(\\mathcal{X})\\le (r_1,\\ldots,r_d)$ 时, $\\mathcal{X}$ 的信息量被压缩到 $\\sum_k n_k r_k+r_1\\cdots r_d$ 个参数, 自由度急剧下降。CP 分解是 Tucker 的对角约束特例, 即 $\\mathcal{G}$ 限制为超对角形式, 此时秩退化为单标量 $R$。在我们的反问题中, $A:\\mathbb{R}^{n_1\\times\\cdots\\times n_d}\\to\\mathbb{R}^{m}$ 为线性 (或多线性) 前向算子, 目标函数构造为"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{\\mathcal{X}}\\,\\tfrac{1}{2}\\|A\\mathcal{X}-y\\|^2 + \\alpha\\,\\sum_{k=1}^{d}\\|X_{(k)}\\|_{*} \\quad (\\mathrm{Tucker}), \\quad \\alpha\\,\\mathrm{rank}_{\\mathrm{CP}}(\\mathcal{X}) \\quad (\\mathrm{CP}), \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $X_{(k)}$ 为模态-$k$ 展开 (matricization), $\\|\\cdot\\|_{*}$ 为核范数。理论上, Tucker 核范数 $\\sum_k\\|X_{(k)}\\|_{*}$ 正是 Tucker 秩的凸包络, 当各模态因子矩阵满足 incoherence 条件时, Bregman 距离意义下可获得 $\\mathcal{O}(\\delta^{1/2})$ 阶 Hölder 收敛率。我们将各模态的核范数进一步解释为对各因子矩阵的各向异性 Sobolev 范数: 当 $U^{(k)}$ 的列向量承载平滑流形结构 (例如光谱连续性) 时, $\\|U^{(k)}\\|_{*}$ 与 TV 正则化在谱分解意义上相互等价。"
+    },
+    {
+      "type": "p",
+      "text": "算法层面, 优化式 (1) 涉及两个非光滑项的张量化处理, 我们提出基于 Sylvester 方程组的多线性 ADMM 框架。引入辅助变量 $\\mathcal{Z}_k=X_{(k)}$, 增广 Lagrangian 为"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathcal{L}=\\tfrac{1}{2}\\|A\\mathcal{X}-y\\|^2 + \\sum_{k}\\bigl[\\langle\\Lambda_k,X_{(k)}-\\mathcal{Z}_k\\rangle + \\tfrac{\\rho}{2}\\|X_{(k)}-\\mathcal{Z}_k\\|_F^2 + \\alpha\\|\\mathcal{Z}_k\\|_{*}\\bigr], \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "在 $\\mathcal{X}$-子问题中, 因 $A$ 为线性算子, 我们在各模态展平后解耦为 $d$ 个 Sylvester 方程 $X_{(k)}A_k^{\\top}A_k + \\rho\\,X_{(k)} = b_k$, 利用 Kronecker 积的向量化技巧高效求解; 在 $\\mathcal{Z}_k$-子问题中, 执行矩阵软阈值化 $\\mathcal{Z}_k = \\mathrm{SVT}_{\\alpha/\\rho}(X_{(k)}+\\Lambda_k/\\rho)$, 即对每个模态展平矩阵做 SVD 后收缩奇异值。对偶变量按 $\\Lambda_k\\leftarrow\\Lambda_k+\\rho(X_{(k)}-\\mathcal{Z}_k)$ 更新。整体复杂度为 $\\mathcal{O}(d\\cdot m\\cdot n_{\\max}\\cdot r_{\\max})$, 与展平方法的 $\\mathcal{O}(N^3)$ 相比节省巨大。"
+    },
+    {
+      "type": "p",
+      "text": "对 CP 分解的情形, 上述优化是 NP 难, 通常需借助交替最小二乘 (ALS) 或近端梯度迭代。CP 秩的紧致表达为 $\\mathcal{X}=\\sum_{r=1}^{R}\\lambda_r\\,u_r^{(1)}\\circ\\cdots\\circ u_r^{(d)}$, 我们的研究表明, 在谱波段高相关情形下, CP 秩近似更紧, 但其全局最优性不可保证; Tucker 秩则更稳定, 适合作为凸松弛的代理。"
+    },
+    {
+      "type": "p",
+      "text": "讨论与权衡: Tucker 核范数对各模态的独立处理蕴含了“可分离性假设”, 即各维度的低秩结构互不耦合。在多数医学与遥感成像中该假设近似成立, 但对物理上具有强耦合 (如偏振-波长-空间的 Mueller 矩阵场) 的场景, 我们建议采用 Tensor-Train (TT) 分解或张量链 (tensor chain) 分解, 它们在参数复杂度与耦合表达上更优。另一权衡在于: 核范数的凸松弛在真实秩极低时仍有 1-2% 的“凸性偏差”, 此时可用 Schatten $p$-范数 ($p<1$) 或迭代重加权核范数来逼近真实 $\\ell_0$-秩。结论上, 张量分解为多维成像逆问题提供了一种几何-代数兼顾的结构化正则化器, 其数学基础牢固, 计算可行性高, 已在 HSI 融合、动态 MRI、低剂量 CT 等多个场景展现优势。"
+    }
+  ]
+}

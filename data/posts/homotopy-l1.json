@@ -1,0 +1,56 @@
+{
+  "id": "homotopy-l1",
+  "title": "非光滑约束下的同伦算法：从二次罚项桥接至 ℓ₁ 的全程路径跟踪",
+  "date": "2025-04-19",
+  "tags": [
+    "正则化理论",
+    "同伦",
+    "ℓ₁"
+  ],
+  "abstract": "通过二阶微分方程驱动的同伦跟踪解路径，在临界点用伪弧长延拓穿越正则化的奇点。",
+  "body": [
+    {
+      "type": "p",
+      "text": "同伦算法将困难的非光滑优化问题嵌入到一族带参数 $\\alpha \\in [0, 1]$ 的连续问题中, 通过追踪 $\\alpha$ 单调变化时解的演化轨迹, 实现从易解起点到目标问题的桥梁。在稀疏回归与压缩感知语境下, 这体现为 LASSO 路径 (LARS) 与其推广。然而, 标准 LARS 假设 $A$ 满足不相干性, 且对支持集切换采用事件驱动处理, 在临界点处缺乏对解曲线的精细控制。"
+    },
+    {
+      "type": "math",
+      "latex": "J_\\alpha(x) = \\tfrac{1}{2}\\|A x - b\\|^2 + \\alpha\\,\\|x\\|_1, \\quad \\alpha \\in [\\alpha_{\\max}, \\alpha_{\\min}], \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\alpha_{\\max} = \\|A^\\top b\\|_\\infty$ 对应 $x=0$ 的初始解, $\\alpha_{\\min}$ 为目标正则化强度。$J_\\alpha$ 的 KKT 条件 $0 \\in A^\\top (A x - b) + \\alpha\\,\\partial\\|x\\|_1$ 在 $\\alpha$ 几乎处处可微的意义下, 定义了一条连续可微的解路径 $x(\\alpha)$。"
+    },
+    {
+      "type": "p",
+      "text": "对 KKT 条件关于 $\\alpha$ 求全微分, 整理得到关于路径切向 $dx/d\\alpha$ 的线性系统:"
+    },
+    {
+      "type": "math",
+      "latex": "\\frac{d^2 x}{d\\alpha^2} + H\\,\\frac{dx}{d\\alpha} = -\\,\\frac{\\partial^2 \\|x\\|_1}{\\partial \\alpha^2} = 0, \\quad H = A^\\top A + \\alpha\\,\\partial^2 \\|x\\|_1, \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $H$ 是 $J_\\alpha$ 在 $x(\\alpha)$ 处的广义 Hessian。当支持集固定时, $H$ 退化为 $A^\\top A$, 此时 (2) 是常系数二阶常微分方程, 可闭式求解。问题难点出现在支持集切换的临界点 (folding point): 此时一个本为零的坐标即将变号进入活跃集, 雅可比矩阵失去满秩性, 一阶延拓方法必然失效。"
+    },
+    {
+      "type": "p",
+      "text": "我们引入伪弧长延拓 (pseudo-arclength continuation) 穿越这些正则化奇点:"
+    },
+    {
+      "type": "math",
+      "latex": "\\begin{cases} \\mathrm{KKT}(x, \\alpha) = 0, \\\\ \\dot{x}_0 \\,(x - x_0) + \\dot{\\alpha}_0\\,(\\alpha - \\alpha_0) - s = 0. \\end{cases} \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $(\\dot{x}_0, \\dot{\\alpha}_0)$ 是当前路径的切向, $s$ 为沿路径的弧长。该系统将 $x$ 与 $\\alpha$ 联合视为 $s$ 的函数, 自然绕过 Jacobi 降秩退化。在 Banach 空间框架下, 路径 $x(\\alpha) \\in \\mathrm{BV}(\\Omega)$ 满足 $\\mathrm{TV}(x(\\alpha)) \\le \\|A^\\top b\\|_\\infty \\|A\\| / \\alpha$。推论: 若真解 $x^\\dagger$ 满足源条件 $x^\\dagger \\in \\mathcal{R}((A^\\top A)^\\nu)$, 则同伦解在 $\\alpha = \\alpha_{\\min} \\sim \\sigma \\sqrt{\\log p / n}$ 时满足 $\\|x^{\\mathrm{hom}} - x^\\dagger\\|_2 = O(n^{-(2\\nu)/(2\\nu + 1)})$, 达到极小极大下界。"
+    },
+    {
+      "type": "p",
+      "text": "讨论: 本文方法相比 LARS 的优势在于 (i) 临界点处无需人为事件触发, 伪弧长延拓自动处理; (ii) 二阶常微分方程保留曲率信息, 可用于自适应步长; (iii) 易推广至 $\\ell_1$-TV 等组合非光滑罚项, 此时路径为多面体边界的连续切换, 伪弧长延拓提供了高维分段线性轨迹的鲁棒追踪框架。展望未来, 将该方法与 SAG/SAGA 结合, 可在大规模机器学习问题中获得可证明的加速收敛率。"
+    }
+  ]
+}

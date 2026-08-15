@@ -1,0 +1,52 @@
+{
+  "id": "inverse-crime",
+  "title": "逆犯罪为何不道德：网格共谋的深层陷阱",
+  "date": "2026-06-06",
+  "tags": [
+    "不适定逆问题",
+    "数值方法",
+    "可重复性"
+  ],
+  "abstract": "剖析同网格合成数据与反演造成的虚假高精度，及其对奇异谱的扭曲。",
+  "body": [
+    {
+      "type": "p",
+      "text": "\"逆犯罪\"（inverse crime）一词由Colton和Kress在Inverse Acoustic and Electromagnetic Scattering Theory中正式提出，指在相同的离散网格、相同的物理模型、相同的边界条件下合成数据并反演。这种\"自洽\"设置看似工程便利，实则人为地将不适定反问题降级为一个条件良好的插值问题。从认识论上看，逆犯罪是\"模型偏差被数据生成过程系统性掩盖\"的一种形式，使研究者对算法鲁棒性产生根本性的误判。"
+    },
+    {
+      "type": "math",
+      "latex": "A_h^{\\mathrm{gen}}: X_h \\to Y_h, \\quad A_h^{\\mathrm{rec}}: X_h \\to Y_h, \\quad \\sigma_i(A_h^{\\mathrm{gen}}) = \\sigma_i(A_h^{\\mathrm{rec}}). \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "从谱理论的角度审视，逆犯罪的本质是生成算子 $A_h^{\\mathrm{gen}}$ 与重建算子 $A_h^{\\mathrm{rec}}$ 在数值层面是同一个矩阵。这种共谋对奇异值系统造成灾难性的扭曲：在连续极限下，$A$ 的奇异值应有 $\\sigma_i \\to 0$ 的物理衰减，反映不适定性；而在离散的共谋设置下，由于 $A_h^{\\mathrm{gen}} = A_h^{\\mathrm{rec}}$ 实际是一个有限秩、谱非零的算子（特征值下界远离零），其条件数被人为压低，使得正则化不再必要，伪逆 $\\alpha \\to 0$ 的极端情形即可恢复\"机器精度\"的虚假重建。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{cond}_2(A_h) = \\frac{\\sigma_{\\max}(A_h)}{\\sigma_{\\min}(A_h)} \\ll \\mathrm{cond}_2(A), \\quad h \\to 0, \\quad A_h = A_h^{\\mathrm{gen}} = A_h^{\\mathrm{rec}}. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "逆犯罪导致的后果是反演误差表面看起来达到机器精度（典型如 $10^{-12}$），但完全无法迁移到真实应用。一旦将算法部署到物理实验或临床数据，换用更细或更粗的网格、不同的基函数（如有限元与有限差分互换）、不同的物理参数化（直角坐标与曲线坐标）后，误差会急剧回升至 $\\mathcal{O}(1)$ 量级。文献中大量\"高效算法\"的不可复现性，其根源往往可追溯到这一未被声明的网格共谋。"
+    },
+    {
+      "type": "p",
+      "text": "规避逆犯罪的根本原则是反事实数据生成（counterfactual data generation）：在不同于反演所使用的网格、模型、参数化下合成数据。具体而言，应满足以下三个分离性条件：(1) 网格分离——数据生成在网格 $h_{\\mathrm{gen}}$ 上，反演在 $h_{\\mathrm{rec}}$ 上，且 $h_{\\mathrm{gen}} \\neq h_{\\mathrm{rec}}$；(2) 模型分离——数据生成采用比反演更复杂或更高阶的物理模型；(3) 噪声分离——加性噪声的协方差结构与 $A$ 的离散化不共享任何对称性。"
+    },
+    {
+      "type": "math",
+      "latex": "\\sigma_i(A_{h_{\\mathrm{gen}}}^{\\mathrm{gen}}) \\neq \\sigma_i(A_{h_{\\mathrm{rec}}}^{\\mathrm{rec}}), \\quad h_{\\mathrm{gen}} \\neq h_{\\mathrm{rec}} \\quad \\Rightarrow \\quad \\text{no inverse crime}. \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "进一步地，破坏逆犯罪的自洽性检验可以形式化为：若 $A_h^{\\mathrm{gen}} = A_h^{\\mathrm{rec}}$，则 $\\|A_h^{\\mathrm{rec}} x_{\\mathrm{rec}} - y\\| = 0$ 在数值精度内成立；反之，任何残差 $\\|A_{h_{\\mathrm{rec}}}^{\\mathrm{rec}} x_{\\mathrm{rec}} - y\\| > 10 \\epsilon_{\\mathrm{machine}}$ 的反演都可作为通过检验的证据。这一原则在Mueller和Siltanen所著的Linear and Nonlinear Inverse Problems with Practical Applications中作为\"道德准则\"被反复强调。"
+    },
+    {
+      "type": "p",
+      "text": "更深层的伦理考量是：逆犯罪不仅是一个数值实践问题，更是科学诚信问题。在生物医学成像、国防、环境监测等高风险应用中，依赖未经充分验证的算法可能导致误诊、误判乃至灾难性后果。我们主张在投稿与同行评审中将\"反事实验证\"作为可重复性的最低门槛：任何声称优于现有方法的反演算法，必须在独立的数据生成流程（最好包含物理实验或独立代码）下展示其优势。这是对逆问题研究共同体社会责任的基本要求，也是对\"逆犯罪\"这一术语的伦理学升格——它不仅是不道德的，更是不科学的。"
+    }
+  ]
+}

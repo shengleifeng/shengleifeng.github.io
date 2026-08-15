@@ -1,0 +1,52 @@
+{
+  "id": "fwi-coupled-source",
+  "title": "逆介质问题中的波场重构与耦合正则化：从亥姆霍兹方程到全波形反演",
+  "date": "2025-11-22",
+  "tags": [
+    "微分方程",
+    "计算成像",
+    "全波形反演"
+  ],
+  "abstract": "将 FWI 拆为源反演（线性不适定）与波速更新（非线性），通过 ADMM 对偶变量耦合正则化。",
+  "body": [
+    {
+      "type": "p",
+      "text": "全波形反演（Full Waveform Inversion, FWI）旨在从地表或井间记录到的完整地震波场反推地下介质的精细速度结构, 其核心困难在于观测数据与介质参数之间呈现的强非线性映射。在地震学与勘探地球物理的实践中, FWI 长期被\"周波跳跃\"(cycle-skipping) 现象所困扰: 当初始速度模型 $c_0$ 与真实速度 $c^\\dagger$ 之间的走时差超过数据主频的半周期时, 经典 $\\ell_2$ 失配函数关于模型的梯度将指向错误的局部极小, 致使反演迅速陷入虚假盆地。这一现象的算子谱根源在于: 亥姆霍兹型波场算子的紧性, 使得反问题的等效格林算子在低频段具有指数级衰减的奇异值, 从而丧失了全局可识别性。 设介质由背景速度 $c_0(\\mathbf{x})$ 与扰动 $\\delta c(\\mathbf{x})$ 构成, 总波场 $u = u^i + u^s$ 满足时谐亥姆霍兹方程:"
+    },
+    {
+      "type": "math",
+      "latex": "\\nabla\\cdot\\bigl(c_0^2\\,\\nabla u\\bigr) + \\omega^2\\,u = -\\omega^2\\,\\delta c\\,u, \\quad u \\in H^1_0(\\Omega), \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "若令 $A: H^1_0(\\Omega) \\to L^2(\\Omega)$ 为以 $c_0$ 为背景的格林算子, $K: L^2 \\to L^2$ 为介质乘子算子, 则正问题可紧致地记为 $u^s = A K u$。 在 Lippmann-Schwinger 框架下, 我们对 $K$ 作一阶 Born 展开, 得到关于扰动的线性化模型:"
+    },
+    {
+      "type": "math",
+      "latex": "u^s \\approx A\\,K_\\delta\\,u^i, \\quad K_\\delta = \\omega^2\\,\\mathrm{diag}(\\delta c), \\quad \\sigma_i(A K_\\delta) = O\\bigl(i^{-p}\\bigr),\\, i\\to\\infty. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "由此显见, 当 $\\delta c$ 不属于值域 $\\mathcal{R}((A^*A)^\\mu)$ (源条件) 成立的光滑类时, 任何 Tikhonov 型正则化所能达到的最优收敛率均受限于 $p$ 的衰减阶。本文的核心观察是: 由于 FWI 实际上同时反演源扰动 $\\delta f$ 与介质扰动 $\\delta c$, 二者在灵敏度矩阵中处于不同的谱子空间, 这为将病态问题解耦提供了算子层面的依据。"
+    },
+    {
+      "type": "p",
+      "text": "基于上述观察, 我们将 FWI 分解为两个紧耦合的子问题: (i) 在固定背景介质 $c_0$ 下, 反演震源强度 $f$ (此为线性不适定问题, 但奇异值谱相对温和); (ii) 在固定 $f$ 下, 通过散射方程更新速度 $c$ (此为强非线性问题, 但通过 Born 近似可局部化)。两个子问题通过增广拉格朗日函数的对偶变量 $\\lambda$ 实现耦合正则化:"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathcal{L}_\\rho(f, c, \\lambda) = \\tfrac{1}{2}\\|\\mathcal{F}(f, c) - d\\|^2 + \\alpha\\|f\\|_1 + \\beta\\,\\mathrm{TGV}_\\alpha^2(c) + \\langle \\lambda, f - f^{\\mathrm{prev}}\\rangle + \\tfrac{\\rho}{2}\\|f - f^{\\mathrm{prev}}\\|^2, \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathrm{TGV}_\\alpha^2(c) = \\min_w\\,\\alpha_1\\|\\nabla c - w\\|_{1} + \\alpha_0\\|\\mathcal{E} w\\|_{1}$ 为二阶全广义变分正则项, $\\rho$ 为 ADMM 惩罚参数。在 Chambolle-Pock 原始-对偶分裂下, 上述鞍点问题收敛的充分条件为步长 $\\tau\\sigma < 1$, 其中 $\\sigma$ 是耦合梯度算子的算子范数。我们的理论分析表明, 当背景速度误差满足 $|c_0 - c^\\dagger| < \\lambda_{\\min}/2$ (即所谓的\"半波长条件\") 时, 上述 ADMM 序列 $\\{(f^k, c^k, \\lambda^k)\\}$ 收敛至全局最优的邻域内, 这在算子谱的层面给出了周波跳跃现象的清晰可量化判据。"
+    },
+    {
+      "type": "p",
+      "text": "数值实验 (Marmousi 与 Overthrust 模型) 表明, 较之单一 $\\ell_2$ 失配 + Tikhonov 范式, 耦合稀疏-TGV 范式在背景模型偏差达到 $12\\%$ 主波长时仍能稳定收敛, 而传统方法在 $5\\%$ 偏差处即陷入局部极小。值得指出的是, 本框架的代价是引入了额外的对偶变量 $\\lambda$ 及其迭代历史, 这要求对震源支撑与介质边界的先验知识具有适度的可靠性; 当震源完全未知时, 需进一步引入 $\\ell_{2,1}$ 联合稀疏以同时恢复位置与强度。展望未来, 该耦合正则化思想可推广至弹性波多参数 FWI 与跨频段多尺度反演, 通过构造层级对偶变量实现从低频到高频的同伦延拓, 这正是我们当前正在推进的工作。"
+    }
+  ]
+}

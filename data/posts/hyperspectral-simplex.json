@@ -1,0 +1,47 @@
+{
+  "id": "hyperspectral-simplex",
+  "title": "高光谱解混的几何正则化：单形体体积最小化作为凸惩罚",
+  "date": "2024-10-05",
+  "tags": [
+    "计算成像",
+    "高光谱解混",
+    "几何正则化"
+  ],
+  "abstract": "体积惩罚促使端元包络数据边界，需与去噪正则联合以构成鲁棒的最小体积包围单形体分析。",
+  "body": [
+    {
+      "type": "p",
+      "text": "高光谱解混 (hyperspectral unmixing) 是遥感与生物医学光子学的核心逆问题: 给定 $L$ 个光谱波段测量的 $N$ 个像素立方体 $Y\\in\\mathbb{R}^{L\\times N}$, 寻找 $p$ 个端元 $E=[e_1,\\ldots,e_p]\\in\\mathbb{R}^{L\\times p}$ 与对应的丰度矩阵 $A\\in\\mathbb{R}^{p\\times N}$, 使 $Y\\approx EA$ 成立, 并满足物理约束 $A\\ge 0$ (非负) 与 $A^{\\top}\\mathbf{1}=\\mathbf{1}$ (和为一)。线性混合近似 (LMM) 在像素分辨率远大于端元几何尺度时合理, 已成为解混标准模型。本文聚焦于这一约束下的几何正则化: 端元与丰度的可行域构成一个非负单形体 (simplex) $\\Delta_p=\\{a\\in\\mathbb{R}^p:a\\ge 0,\\,\\mathbf{1}^\\top a=1\\}$, 几何先验在这一单形体结构上具有自然的表达。"
+    },
+    {
+      "type": "p",
+      "text": "经典 N-FINDR、VCA 等方法以数据云凸包的几何极限作为端元估计, 但未将端元与丰度联合优化。本文采用几何正则化的最小体积包围单形体 (Minimum Volume Enclosing Simplex, MVES) 框架, 通过最小化由端元张成的单形体体积 $\\mathrm{Vol}(\\mathrm{conv}(e_1,\\ldots,e_p))$ 来迫使端元紧贴数据云的凸包边界。该惩罚函数是凸的 (Cayley-Menger 行列式的平方根) 但非光滑, 我们的反演目标为"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{E, A}\\,\\tfrac{1}{2}\\|Y - EA\\|_F^2 + \\alpha\\,\\mathrm{Vol}(\\mathrm{conv}(E)) + \\beta\\,\\mathrm{TV}_x(A) + \\gamma\\,\\mathrm{TV}_{\\lambda}(A),\\quad A\\ge 0,\\,A^{\\top}\\mathbf{1}=\\mathbf{1}, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathrm{TV}_x(A)$ 为丰度在空间维度的全变分 (鼓励分段常数丰度图), $\\mathrm{TV}_{\\lambda}(A)$ 为光谱维度上的 TV (鼓励丰度的谱间平滑), 分别针对高光谱数据的两大物理先验。体积项的凸性是 MVES 区别于 VCA 等启发式方法的核心优势: 任何局部极小都是全局极小附近 (在凸约束下)。我们将 Cayley-Menger 行列式 $\\mathrm{CM}(E)=\\det\\bigl[\\begin{smallmatrix}0&\\mathbf{1}^\\top\\\\ \\mathbf{1}&EE^{\\top}\\end{smallmatrix}\\bigr]$ 表达为 Gram 矩阵行列式, 从而将体积项等价地改写为"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{Vol}(\\mathrm{conv}(E)) = \\tfrac{1}{(p-1)!}\\sqrt{\\det(E^\\top E - \\tfrac{1}{p}\\mathbf{1}\\mathbf{1}^\\top E^\\top E)}, \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "此表达便于计算对 $E$ 的次梯度, 并将体积项识别为端元协方差矩阵的修正行列式, 即体积本质上惩罚端元之间的线性相关, 鼓励它们的方向分散。从随机矩阵理论看, 当 $E$ 的列近似正交时体积最大化 (即“信息最大化”端元), 这恰好是 Hartley 信息论意义上的端元选取标准。"
+    },
+    {
+      "type": "p",
+      "text": "算法层面, 我们提出基于乘子交替方向 (ADMM) 的联合优化: 引入辅助变量 $Z=A$ 拆分非负约束与 TV 惩罚, 在每步中交替执行 (a) $E$-子问题: 固定 $A$, 求解关于 $E$ 的最小化问题, 因 $\\mathrm{Vol}$ 项非光滑, 使用近端梯度; (b) $A$-子问题: 固定 $E$, 在 $A\\ge 0$, $A^{\\top}\\mathbf{1}=\\mathbf{1}$ 凸集上做约束最小二乘 (利用 KKT 与单纯形投影); (c) $Z$-子问题: 在 $Z$ 上执行 TV 邻近算子 (各向同性 $\\ell_{2,1}$ 球面投影); (d) 对偶变量更新。整体复杂度为 $\\mathcal{O}(N\\log N + Lp^2)$, 优于 VCA 的 $O(L^2N)$。"
+    },
+    {
+      "type": "p",
+      "text": "讨论与权衡: 体积项在高噪情形下倾向于“过度紧收”——即把端元推到数据云质心, 导致丰度集中在少数端元, 端元数目被低估。这正是我们引入 $\\beta\\mathrm{TV}_x(A)$ 与 $\\gamma\\mathrm{TV}_{\\lambda}(A)$ 的根本原因: 丰度正则化作为去噪器, 补偿体积项的过度几何收缩。另一权衡在于, 体积项对 $p$ 的选取敏感: $p$ 过小则几何过于紧, $p$ 过大则退化解 (出现重复端元)。我们建议用 Harsanyi-Farrand-Chang (HFC) 虚拟维度估计作为 $p$ 的初值, 再以 SURE 准则微调。结论上, 几何正则化为高光谱解混提供了一种物理可解释、数学严格的反演范式, 将“数据云被一个紧致单形包围”这一几何直觉提升为可计算的凸优化问题, 并在矿物识别、农业监测、肿瘤光谱分辨等场景中展现出对噪声的鲁棒性。"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "volterra-greybox",
+  "title": "非线性黑箱算子的自适应系统辨识：Volterra 级数与正则化泛函的嫁接",
+  "date": "2025-12-27",
+  "tags": [
+    "微分方程",
+    "不适定逆问题",
+    "系统辨识"
+  ],
+  "abstract": "将微分方程结构知识作为强约束加入 Volterra 核反演，实现数据与物理知识的灰箱折衷。",
+  "body": [
+    {
+      "type": "p",
+      "text": "非线性动力学系统的辨识问题在控制系统、生物物理及神经科学中具有基础地位。Volterra 级数将非线性系统输入-输出关系表达为多线性积分的级数展开:"
+    },
+    {
+      "type": "math",
+      "latex": "y(t) = \\sum_{n\\ge 1}\\int\\cdots\\int h_n(\\tau_1,\\ldots,\\tau_n)\\,u(t-\\tau_1)\\cdots u(t-\\tau_n)\\,d\\tau_1\\cdots d\\tau_n",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $h_n$ 为 $n$ 阶 Volterra 核。该框架理论上完备,但实践中面临维数灾难:即便将 $h_n$ 在有限基上展开,$n=3$ 时的待估参数规模即已超过 $10^6$。更为根本的是,高阶核的辨识在 Hadamard 意义下属严重不适定,小扰动即可使反演解剧烈震荡。本文的核心立场是:**单纯堆砌数据无法挽救**,必须将物理结构知识作为强约束嵌入反演泛函。"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{h}\\,\\tfrac{1}{2}\\|\\mathcal{V}(h) - y\\|^2 + \\alpha\\|h\\|_{H^s}^2 + \\beta\\,\\mathrm{PDE-residual}(h, y)^2",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "我们提出“灰箱”反演框架:在再生核 Hilbert 空间(RKHS)中,核的非光滑度由 Sobolev 范数 $\\|h\\|_{H^s}^2$ 度量;而物理违背度由 $\\mathrm{PDE-residual}(h, y)$ 量化,例如对哈密顿系统,该项度量 $\\partial_t h + \\{H, h\\}$ 与 $0$ 的偏离;对耗散系统,度量 Lyapunuov 函数的偏微分方程残差。"
+    },
+    {
+      "type": "p",
+      "text": "**命题**(灰箱解的存在唯一性):在 $\\mathcal{V}: H^s \\to L^2$ 为紧算子、PDE 残差项满足一致强凸性的条件下,灰箱泛函的极小化子 $\\hat h$ 存在唯一,且对测量扰动 $\\delta y$ 满足 Lipschitz 稳定性 $\\|\\hat h - h^\\dagger\\|_{H^s} \\le C\\,\\|\\delta y\\|_{L^2}$,其常数 $C$ 显式依赖于 $s$ 与 $\\beta$。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{PDE-res}(h) = \\Bigl\\|\\partial_t h + \\sum_{j=1}^N \\mathcal{L}_j(h, \\partial h) \\Bigr\\|_{L^2}^2, \\quad \\mathcal{L}_j \\;\\text{为物理耗散/哈密顿算子}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**讨论**:灰箱范式相较于纯数据驱动方法具有三重优势:第一,$\\beta$ 的物理一致性惩罚将可行解限制于与已知定律相容的子流形上,大幅压缩了高阶核的等效搜索空间;第二,$H^s$ 半范数中的 $s$ 选取与系统物理光滑度匹配,可避免过参数化;第三,PDE 残差项在 RKHS 中提供了天然的结构化先验,与深度神经网络中“物理信息损失”(PDE-residual loss)有形式相似性,但其在无限维函数空间中的收敛性更易分析。"
+    },
+    {
+      "type": "math",
+      "latex": "\\|\\hat h - h^\\dagger\\|_{H^s} \\le C_1 \\,\\alpha^{\\mu/(2\\mu+1)} + C_2\\,(\\sigma/\\beta)^{1/2}, \\quad h^\\dagger \\in \\mathcal{R}(\\mathcal{V}^\\ast\\mathcal{V})^\\mu",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**结论与展望**:本文通过将微分方程结构知识嫁接至 Volterra 核反演,实现了数据驱动与物理先验的灰箱折衷。该框架在神经动力学识别、记忆型粘弹介质表征等场景中显著提升了有限样本下的辨识鲁棒性。后续研究可探索与符号回归的结合——在 RKHS 中自动发现守恒律或准守恒律,并将其作为更精细的 PDE 残差惩罚项引入;亦可推广至非局部算子与分数阶动力学的灰箱辨识。"
+    }
+  ]
+}

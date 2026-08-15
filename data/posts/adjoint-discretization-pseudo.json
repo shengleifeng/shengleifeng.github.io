@@ -1,0 +1,56 @@
+{
+  "id": "adjoint-discretization-pseudo",
+  "title": "基于 PDE 的变分框架中，前向算子的伴随实现如何产生数值伪正则化",
+  "date": "2025-04-05",
+  "tags": [
+    "不适定逆问题",
+    "伴随方法",
+    "数值正则化"
+  ],
+  "abstract": "离散伴随相对于解析梯度的偏差相当于对真实梯度施加低通滤波器，构成数值伪正则化。",
+  "body": [
+    {
+      "type": "p",
+      "text": "在基于偏微分方程约束的参数反演 (例如电阻抗成像、海洋声学层析、地下水流场识别) 中, 目标泛函 $J(x, u) = \\int_\\Omega \\mathcal{M}(u, x)\\,dx$ 通过状态方程 $L(x) u = f$ 与参数 $x$ 耦合。其关于 $x$ 的 Fréchet 导数无法直接计算, 必须借助拉格朗日乘子 (伴随状态) $\\lambda$ 经由伴随方程 $L(x)^\\ast \\lambda = \\partial_u \\mathcal{M}$ 求得。这一机制由 Lions 的控制理论奠基, 是 PDE 约束优化的核心工具。"
+    },
+    {
+      "type": "p",
+      "text": "在工程实现中, 伴随方程本身需要在网格上离散求解, 不可避免地引入数值格式误差。令 $L_h$ 为前向算子的离散矩阵, $L_h^\\top$ 为转置 (离散伴随), 则有 $L_h^\\top \\lambda_h = g_h$, 其中下标 $h$ 表示网格分辨率。解析伴随 $L^\\ast$ 与离散伴随 $L_h^\\top$ 之间存在由离散格式一致性阶 $p$ 决定的偏差:"
+    },
+    {
+      "type": "math",
+      "latex": "\\lambda_h - \\iota_h\\lambda \\sim O(h^p), \\quad \\nabla J_h(x) - \\iota_h \\nabla J(x) \\sim O(h^p), \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\iota_h$ 是从连续到离散的插值算子。本文揭示, 这一离散偏差并非纯粹的\"误差\", 而是在频域等价于对真实梯度施加了一个低通滤波器 $G_{\\mathrm{adj}}(\\xi)$:"
+    },
+    {
+      "type": "math",
+      "latex": "\\widehat{\\nabla J_h}(\\xi) = G_{\\mathrm{adj}}(\\xi)\\,\\widehat{\\nabla J}(\\xi) + O(h^{2p}), \\quad G_{\\mathrm{adj}}(\\xi) = \\tfrac{\\sin(\\pi \\xi h)}{\\pi \\xi h}\\,\\bigl(1 + O(h^2)\\bigr). \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "对于中心差分离散, $G_{\\mathrm{adj}}$ 在频域表现为一个 sinc 型低通, 截断频率由 $\\xi_c \\sim 1/h$ 决定。在粗网格 (大 $h$) 上, $G_{\\mathrm{adj}}$ 截去梯度的高频分量, 因此粗网格实现常表现为\"幸运的稳定\"; 一旦网格加密, 这种数值正则化迅速消失, 此时若不引入显式正则化 (Tikhonov 或 TV), 原本在粗网格上稳定的算法可能突然发散。"
+    },
+    {
+      "type": "p",
+      "text": "我们将这一观察形式化为定理: 设连续反问题由紧算子 $A: X \\to Y$ 表达, $X$, $Y$ 为 Hilbert 空间, 则离散伴随梯度 $g^\\delta_h$ 与真实梯度 $g^\\dagger$ 的关系为"
+    },
+    {
+      "type": "math",
+      "latex": "\\|g^\\delta_h - g^\\dagger\\| \\le \\|G_{\\mathrm{adj}}\\,(I - G_{\\mathrm{fwd}})\\,\\nabla J(x^\\dagger)\\| + \\|\\mathrm{disc\\text{-}error}\\| + C\\,\\tfrac{\\eta}{\\sigma_{\\mathrm{cut}}(A)}, \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $G_{\\mathrm{fwd}}$ 为前向算子的离散-连续频响, $\\sigma_{\\mathrm{cut}}$ 为有效截断奇异值。该误差分解的右端第一项是数值伪正则化所引入的偏差, 第二项是离散格式的一致性误差, 第三项是数据噪声通过算子伪逆的放大。我们的算法设计目标是最小化这三项的总和, 而非孤立地追求每一项的极小。具体策略包括 (i) 自适应正则化补偿: 估计 $G_{\\mathrm{adj}}$ 后在目标函数中显式添加 $\\|(I - G_{\\mathrm{adj}}^{-1})\\,x\\|^2$ 型修正; (ii) 双网格梯度校正: 在粗网格 $H$ 与细网格 $h$ 上同时求解伴随方程, 通过 Richardson 外推恢复 $O(h^{2p})$ 的一致性阶。"
+    },
+    {
+      "type": "p",
+      "text": "结论: 数值伪正则化是 PDE 约束反演中一个长期被忽视的\"沉默的滤波器\", 它在粗网格上充当意外的稳定器, 在细网格上却成为系统误差源。展望未来, 该分析可与可微编程框架 (例如基于 PyTorch 的 PDE 求解器) 结合, 实现对离散伴随梯度的显式频谱校正; 同时, 该方法可推广到非 Hilbert 空间下的 Bregman 梯度, 为非常规 PDE 约束反问题提供新的理论视角。"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "id": "fpm-phase-retrieval",
+  "title": "傅里叶叠层成像的病态相位恢复：交替投影在求解什么泛函？",
+  "date": "2026-04-11",
+  "tags": [
+    "计算成像",
+    "相位恢复",
+    "优化理论"
+  ],
+  "abstract": "从 Wirtinger 流形与邻近分裂角度，澄清 FPM 交替投影的隐式变分结构。",
+  "body": [
+    {
+      "type": "p",
+      "text": "傅里叶叠层显微（Fourier Ptychographic Microscopy, FPM）通过在可变入射角的 LED 阵列下采集多幅低分辨率强度图像，复原样品的高分辨复振幅分布。其核心算法常被形象地描述为在空间域施加支撑约束、在 Fourier 域用测量幅度替换的交替投影（Alternating Projection, AP），但该叙述遮蔽了若干本质性的结构问题：投影操作收敛于哪一个不动点？隐式的目标泛函是什么？为何在频谱重叠不足时算法会分叉？我们试图从 Wirtinger 流形上的非凸优化与邻近分裂（proximal splitting）两个角度，给出严谨的等价刻画。"
+    },
+    {
+      "type": "p",
+      "text": "设第 $k$ 个 LED 照明下采集的强度图为 $y_k \\in \\mathbb{R}_+^{N}$，对应的离散 Fourier 子采样算子为 $\\mathcal{F}_k$。我们令待恢复的复振幅为 $z \\in \\mathbb{C}^N$，并以支撑域 $u \\in \\mathbb{C}^M$（$M \\le N$）作为辅助变量。FPM 的变分目标函数可写为下列块可分模型："
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{z,u}\\;\\tfrac{1}{2}\\sum_{k=1}^{K} w_k\\bigl(|\\mathcal{F}_k z| - \\sqrt{y_k}\\bigr)^2 + \\iota_{\\mathcal{C}_S}(u) + \\tfrac{\\rho}{2}\\,\\|z - \\mathcal{P}_S u\\|^2, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathcal{C}_S$ 是支撑约束 $\\mathrm{supp}(u) \\subseteq S$ 下的复向量凸集，$\\iota_{\\mathcal{C}_S}$ 为其指示函数，$\\mathcal{P}_S$ 为支撑投影，$\\rho > 0$ 为耦合常数，加权 $w_k$ 度量各频段子孔径的可信度。该模型在 $z$-块上是关于 $z$ 的可微（依 Wirtinger 导数）非凸函数，在 $u$-块上则是邻近友好的凸约束，因而整体适用于块坐标下降（BCD）求解。"
+    },
+    {
+      "type": "p",
+      "text": "对 $z$-子问题取 Wirtinger 梯度并令其为零，可得封闭形式的更新 $z^{(n+1)} = \\mathcal{T}(z^{(n)}, u^{(n)})$，其作用可写成频域上的逐元素软投影："
+    },
+    {
+      "type": "math",
+      "latex": "z^{(n+1)} = \\mathcal{F}^{-1}\\Bigl(\\mathcal{W} \\odot \\bigl(\\sqrt{y}\\odot e^{j\\angle \\mathcal{F} z^{(n)}} + \\beta\\,\\mathcal{F}\\mathcal{P}_S u^{(n)}\\bigr)\\Bigr), \\quad \\beta = \\rho/(\\rho + w_{\\max}), \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathcal{W}$ 是由权重 $w_k$ 沿对角铺成的权重张量。该映射在 $z$-块为非扩张（nonexpansive），在 $u$-块为硬投影，二者的复合与原 AP 算法的两步迭代严格等价。因此，标准的 FPM-AP 实质上是模型 (1) 的 BCD 实例，而非常被误传的两个线性投影的简单交替。"
+    },
+    {
+      "type": "p",
+      "text": "我们进一步分析目标函数的二阶结构：Hessian 的负曲率方向揭示了 AP 算法的分叉机理。设 $v_k$ 为相邻 LED 频段的重叠区域，引入局部线性化"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{Hess}\\,\\mathcal{L}(z^\\star)\\,\\big|_{T_{z^\\star}\\mathcal{M}} \\;\\text{有特征值} \\;\\mu_j \\;=\\; \\sum_{k} w_k\\,\\bigl(1 - \\cos\\theta_k^{(j)}\\bigr), \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\theta_k^{(j)}$ 是切向本征模 $v_j$ 在第 $k$ 频段中的相位夹角。当邻接 LED 的数值孔径过小、$w_k \\to 0$ 时，$\\mu_j$ 退化为零，Hessian 沿该方向丧失强凸性，相应的不动点集由孤立点退化为低维流形，呈现解的相位分叉（phase branching）。这是 FPM 在低重叠率下出现伪影扩散与解不唯一的数学根源。"
+    },
+    {
+      "type": "p",
+      "text": "针对此分叉，我们提出两类修补策略。其一，在 BCD 中加入冗余约束——利用 ePIE 的振幅加权自适应步长，等价于在 (1) 中引入 $z$ 依赖的 $\\rho(z)$，将 Hessian 重新正定化；其二，将 (1) 与一个轻微的全变分型先验耦合，形成"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{z,u}\\;\\tfrac{1}{2}\\sum_{k} w_k\\bigl(|\\mathcal{F}_k z| - \\sqrt{y_k}\\bigr)^2 + \\alpha\\,\\mathrm{TV}(z) + \\iota_{\\mathcal{C}_S}(u) + \\tfrac{\\rho}{2}\\,\\|z - \\mathcal{P}_S u\\|^2, \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "并用原始-对偶分裂（PDHG/Chambolle-Pock）求解。数值实验与渐近分析均表明，式 (4) 的非鞍点子流形在低重叠率下是孤立的，从而有效地压制了分叉模态。我们认为，未来 FPM 理论的核心，应从投影几何转向分裂优化的非凸景观，方能在数学上统一解释其收敛、分叉与可重建性边界。"
+    }
+  ]
+}

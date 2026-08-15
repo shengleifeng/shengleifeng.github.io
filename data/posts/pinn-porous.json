@@ -1,0 +1,52 @@
+{
+  "id": "pinn-porous",
+  "title": "在 Badlands 上驰骋：多孔介质流参数反演的深度神经网络与 PDE 残差纠缠",
+  "date": "2025-09-13",
+  "tags": [
+    "微分方程",
+    "不适定逆问题",
+    "PINN"
+  ],
+  "abstract": "分析 PDE 残差作为软约束改变损失景观的机制，及其抑制虚假高频模式与引入数值伪像的双刃剑。",
+  "body": [
+    {
+      "type": "p",
+      "text": "多孔介质参数反问题长期以来被视为计算地球物理与渗流力学中的标志性病态反演任务。给定稀疏的稳态压力水头观测 $p^{\\mathrm{obs}}(x_i)$，$i=1,\\dots,N$，我们试图在达西定律 $\\nabla\\cdot(K(x)\\nabla p(x)) = 0$ 的约束下重构非均匀渗透率场 $K(x)$。由于 $K$ 在对数尺度上跨越多个数量级且仅在边界上可微，标准监督学习网络将 $K$ 视为自由参数回归时，往往拟合到与物理流场不相容的高频伪影。物理信息神经网络 (PINN) 通过将方程残差作为软约束嵌入损失函数，为解决该问题提供了一条可微的端到端路径，但其内在的损失景观改造机制尚未被严格剖析。"
+    },
+    {
+      "type": "p",
+      "text": "我们采用混合变分形式的达西方程残差以避免二阶导数的数值不稳定性。具体地，PINN 的解 $(p_\\theta, K_\\theta)$ 应满足：对任意检验函数 $\\varphi \\in H^1_0(\\Omega)$，"
+    },
+    {
+      "type": "math",
+      "latex": "\\int_\\Omega K_\\theta(x)\\,\\nabla p_\\theta(x)\\cdot\\nabla\\varphi(x)\\,dx = \\int_{\\partial\\Omega} g(x)\\,\\varphi(x)\\,ds, \\quad \\forall\\,\\varphi\\in H^1_0(\\Omega), \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "由 Lax-Milgram 定理，式 (1) 的双线性形式强制了 $p_\\theta$ 的 $H^1$ 正则性，从而抑制了纯数据驱动网络常见的监督尖峰。我们将该弱残差度量 $r_\\mathrm{PDE}(K_\\theta,p_\\theta)$ 与观测损失线性叠加，"
+    },
+    {
+      "type": "math",
+      "latex": "L(\\theta) = \\tfrac{1}{N}\\sum_{i=1}^N |p_\\theta(x_i) - p^{\\mathrm{obs}}(x_i)|^2 + \\lambda\\,\\|r_\\mathrm{PDE}(K_\\theta,p_\\theta)\\|_{L^2}^2 + \\mu\\,\\mathrm{TV}(K_\\theta), \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "此处 $\\mathrm{TV}(K_\\theta)$ 显式地引入全变分罚项以应对渗透率场固有的尖锐界面（断层、河道）。从贝叶斯推断的视角看，式 (2) 各项分别对应高斯似然、PDE 残差的高斯先验与全变分 Laplace 先验。当 $\\lambda$ 充分大时，残差项将 $K$ 约束在达西方程诱导的解流形上，构造出一种与数据自适应的 PDE 正则化。我们进一步对损失景观进行谱分析，记 $J(\\theta) = \\partial L/\\partial \\theta$ 的 Hessian 为 $H = \\nabla^2_\\theta L$。PDE 残差项的引入可被视作在 $H$ 上叠加了一个低秩的正定修正 $H_{\\mathrm{PDE}} = 2\\lambda\\,J_r^\\top J_r$，其中 $J_r$ 是残差对网络参数的雅可比矩阵，"
+    },
+    {
+      "type": "math",
+      "latex": "\\sigma_{\\min}(H) \\ge \\sigma_{\\min}(H_{\\mathrm{data}}) + 2\\lambda\\,\\sigma_{\\min}(J_r^\\top J_r), \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "命题 1: 式 (3) 表明 PDE 残差项等价于在 Hessian 的最小特征方向上施加刚性约束，使原本平坦甚至病态的损失景观获得严格凸的骨架，这恰是 Badlands 地形（指损失函数的多峰崎岖景观）能被网络稳健穿越的根源。然而我们也观察到 $J_r$ 的非平凡零空间：那些对残差无贡献但能拟合数据噪声的子空间，仍可能形成新的局部极小。推论（数值伪像的不可避免性）进一步指出，在有限元或有限差分离散格式下，弱形式残差 $r_\\mathrm{PDE}$ 的求积本身引入了网格依赖的截断误差 $\\mathcal{O}(h^p)$，这意味着即便真解 $K^\\dagger$ 存在，PINN 的全局最小值 $\\theta^\\star$ 也会在 $K^\\dagger$ 的 $h^p$ 邻域内偏移，从而形成新的伪影局部极小。"
+    },
+    {
+      "type": "p",
+      "text": "综上，PDE 残差纠缠机制为多孔介质反演提供了一种先物理后数据的双层正则化结构。其优势在于能够利用神经切线核的隐式偏置来学习与流场耦合的渗透率场；其代价是引入了离散格式诱导的伪影自由度假象。未来的工作将探索将算子学习 (DeepONet, Fourier Neural Operator) 与 PDE 残差结合，以获得既连续可微又具备严格物理一致性的参数反演框架。"
+    }
+  ]
+}

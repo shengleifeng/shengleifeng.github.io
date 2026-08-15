@@ -1,0 +1,52 @@
+{
+  "id": "cgne-backward-heat",
+  "title": "非线性不适定迭代的 Krylov 正则化：CGNE 对反向热方程的奇效与局限",
+  "date": "2026-01-10",
+  "tags": [
+    "不适定逆问题",
+    "迭代正则化",
+    "Krylov"
+  ],
+  "abstract": "揭示 CGNE 残差多项式在不适定频谱上的陡峭滤波特性及 Ritz 值\"跳跃\"不稳定。",
+  "body": [
+    {
+      "type": "p",
+      "text": "反向热方程(逆时热传导问题)是经典的指数型不适定问题:从终值 $u(x,T)$ 反推初值 $u(x,0)$,其前向算子 $A = e^{T\\Delta}$ 的奇异值 $\\sigma_i = e^{-T\\lambda_i}$ 关于特征值 $\\lambda_i$ 呈指数衰减,导致经典 Landweber 迭代收敛极其缓慢。CGNE(正规方程共轭梯度)作为一种 Krylov 子空间迭代正则化方法,被广泛认为可显著加速该问题的半收敛进程。"
+    },
+    {
+      "type": "p",
+      "text": "CGNE 的第 $k$ 步迭代解 $x^k$ 可写为 $x^k = p_k(A^\\ast A) A^\\ast y$,其中 $p_k$ 为一 $k$ 次多项式,且 $p_k(0) = 0$(确保零阶项对应初始 $A^\\ast y$)。残差多项式 $\\tilde p_k(\\sigma) = 1 - \\sigma\\,p_k(\\sigma^2)$ 在 Ritz 值 $\\theta_i$ 附近接近 1,在零点附近衰减至 0,呈现 SVD 截断的“软化”形态。这种陡峭的频谱滤波是 CGNE 比 Landweber 收敛快得多的根本原因。"
+    },
+    {
+      "type": "math",
+      "latex": "p_k(\\sigma^2) = \\prod_{i=1}^k \\frac{\\sigma^2 - \\theta_i}{\\theta_i}, \\quad \\theta_i = \\frac{\\|r^{i-1}\\|^2}{\\|p^{i-1}\\|^2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**命题**(Krylov 子空间内的最优性):在 $k$ 步内,CGNE 的解 $x^k$ 是 $x^0 + \\mathcal{K}_k(A^\\ast A, A^\\ast r^0)$ 仿射子空间中使残差 $\\|A x - y\\|$ 极小的唯一元素。该最优性是 Hilbert 空间投影定理的直接推论,赋予 CGNE 在无噪声情形下的精确解恢复能力:若 $x^\\dagger \\in \\mathrm{span}\\{v_1, \\ldots, v_k\\}$,则 $x^k = x^\\dagger$。"
+    },
+    {
+      "type": "p",
+      "text": "然而,CGNE 的正则化性质对其谱分布有强依赖。**定理**(Ritz 值的跳跃不稳定):当 $A^\\ast A$ 存在重特征值或谱呈簇状聚集时,相邻 Ritz 值 $\\theta_i, \\theta_{i+1}$ 出现非物理的“跳跃”,即 $p_k$ 在簇内形成非单调的振荡,导致部分有效频谱分量被错误地衰减到零,反问题内部正则化机制失稳。该现象在反向热方程的高维情形中尤为严重。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{cond}_2\\bigl(\\mathcal{K}_k(A^\\ast A)\\bigr) = \\frac{\\max_i \\theta_i}{\\min_i \\theta_i} \\to \\infty \\;\\Rightarrow\\; \\exists i: \\,|p_k(\\theta_i)| \\gg \\|p_k\\|_\\infty",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "针对上述局限,我们提出混合截断策略:在 Krylov 子空间维度 $k$ 上叠加以奇异值阈 $\\sigma_{\\mathrm{cut}}$ 的硬截断,使得 $\\hat x^k = \\sum_{\\sigma_i \\ge \\sigma_{\\mathrm{cut}}}\\langle x^k, v_i\\rangle v_i$。该策略将 CGNE 的“软”频谱滤波与 SVD 截断的“硬”过滤相结合,在保持高阶多项式对非簇状谱的快速收敛的同时,有效抑制了 Ritz 跳跃带来的局部不稳定性。"
+    },
+    {
+      "type": "math",
+      "latex": "\\hat x_{\\alpha,\\,k}^{\\mathrm{HCGNE}} = \\sum_{i:\\sigma_i \\ge \\alpha} \\langle p_k(A^\\ast A) A^\\ast y, v_i\\rangle v_i, \\quad \\alpha = \\sigma_{\\mathrm{cut}}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**讨论与展望**:本文从 Ritz 值的谱论视角揭示了 CGNE 在反向热方程中的“奇效”源于其多项式滤波函数对聚集谱的极端敏感。混合截断策略在保持 CGNE 高效性的同时,引入显式的谱硬阈值以约束 Krylov 子空间内的不稳定性,构成对一类紧算子不适定问题的统一范式。后续研究可推广至与 Tikhonov 谱滤波的等价性分析,以及在贝叶斯先验下自适应选择 $\\sigma_{\\mathrm{cut}}$ 的后验策略。"
+    }
+  ]
+}

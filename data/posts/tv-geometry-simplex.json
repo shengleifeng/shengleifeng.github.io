@@ -1,0 +1,57 @@
+{
+  "id": "tv-geometry-simplex",
+  "title": "全变分正则化的几何本质：不仅是稀疏，更是单形面投影",
+  "date": "2026-05-23",
+  "tags": [
+    "正则化理论",
+    "全变分",
+    "计算成像"
+  ],
+  "abstract": "从 TV 对偶刻画与 Radon 测度分解，揭示阶梯效应的几何根源与 TGV 的修复机制。",
+  "body": [
+    {
+      "type": "p",
+      "text": "全变分（Total Variation, TV）正则化由Rudin、Osher和Fatemi在1992年的图像去噪论文中提出，常被通俗地解释为\"鼓励分段常数\"，但这一表述并未触及其在函数空间分析中的数学本质。事实上，TV的真正几何意义在于强迫图像梯度的方向场集中到低维单形面上，从而产生所谓的\"阶梯效应\"（staircasing artifact）。我们必须从有界变差函数空间（BV空间）的对偶理论出发，理解TV正则化的深层结构。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{TV}(u) = \\sup\\left\\{ \\int_\\Omega u\\, \\mathrm{div}\\,\\phi\\,dx : \\phi \\in C_c^1(\\Omega; \\mathbb{R}^d), \\|\\phi\\|_\\infty \\le 1 \\right\\}. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "在BV框架下，$u \\in \\mathrm{BV}(\\Omega)$ 的分布梯度 $\\nabla u$ 是一个有界Radon测度，其极分解为 $\\nabla u = |\\nabla u| \\cdot \\theta$，其中 $|\\nabla u|$ 是全变差测度，$\\theta: \\Omega \\to \\mathbb{S}^{d-1}$ 是方向场。TV正则化的几何意义可被理解为对方向场 $\\theta$ 的低维约束——在TV最小化过程中，欧拉-拉格朗日方程的解满足 $|\theta(x)| \\in \\{e_1, e_2, \\ldots, e_d\\}\\cup\\{0\\}$，即方向场集中在坐标单纯形的顶点集上（单形面），而非自由地在 $\\mathbb{S}^{d-1}$ 上连续取值。"
+    },
+    {
+      "type": "math",
+      "latex": "\\nabla u = |\\nabla u|\\,\\theta, \\quad \\theta \\in \\mathbb{S}^{d-1}, \\quad \\mathrm{TV-minimizer:} \\quad \\theta(x) \\in \\{e_1, \\dots, e_d\\} \\cup \\{0\\}. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "这一几何性质可从TV的Legendre-Fenchel对偶精确刻画：$\\mathrm{TV}(u) = \\sup_{\\phi \\in \\mathcal{K}} \\langle u, \\mathrm{div}\\,\\phi \\rangle$，其中 $\\mathcal{K}$ 是散度为零约束下的有界向量场集合。KKT条件要求在某最优解 $u^{\\star}$ 处，向量场 $\\phi^{\\star}$ 取到可行域的极端点，即 $\\phi^{\\star}(x) \\in \\mathrm{ext}(\\mathcal{K})$。在离散实现中，这一极端点结构转化为图像的\"分段常数+坐标对齐\"特征——这就是阶梯效应的数学根源。"
+    },
+    {
+      "type": "p",
+      "text": "二阶全变分（Total Generalized Variation, TGV）由Bredies等人于2010年提出，通过引入辅助对称张量场 $w \\in \\mathrm{BD}(\\Omega; \\mathrm{Sym}^d)$ 作为增广梯度，缓解阶梯化偏好。TGV的定义为"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{TGV}^2_\\alpha(u) = \\sup\\left\\{ \\int_\\Omega u\\, \\mathrm{div}^2 \\psi\\,dx : \\psi \\in C_c^2(\\Omega; \\mathrm{Sym}^d), \\|\\psi\\|_\\infty \\le \\alpha_0, \\|\\mathrm{sym}\\,\\nabla\\psi\\|_\\infty \\le \\alpha_1 \\right\\}. \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "TGV通过增广梯度结构允许一阶梯度本身也可有受控的平滑变化，从而将方向场 $\\theta$ 从离散单形面\"解耦\"为连续可微流形。这一几何修补的代价是引入双参数 $(\\alpha_0, \\alpha_1)$ 的调优负担，在实践中常通过交叉验证或基于SURE的随机化方法确定。从变分推断视角，TGV的KKT条件可解释为方向场的\"延展性\"约束，避免了TV的极端化倾向。"
+    },
+    {
+      "type": "math",
+      "latex": "0 \\in A^{\\top}(A u - y) + \\lambda\\,\\partial\\,\\mathrm{TGV}^2_\\alpha(u) \\quad \\text{(optimality condition)}. \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "高阶TGV（如 $\\mathrm{TGV}^k$）通过增广梯度的多重链式对称结构进一步修复几何缺陷，允许更高阶的曲率惩罚与方向连续性。数值上，TGV正则化的求解常通过原始-对偶分裂算法（PDHG，即Chambolle-Pock算法）实现：其对偶变量 $\\phi$ 与 $w$ 分别承担一阶与二阶的几何约束，通过显式的邻近算子迭代收敛到精确最优解。我们认为，TGV代表了TV族正则化在几何结构上的一次重要升级，但其仍有改进空间——例如非局部算子值的TGV、张量场的TGV等方向仍是前沿议题。"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "id": "newton-illposed-taboo",
+  "title": "二阶优化在不适定问题中的禁忌：为何牛顿法会放大噪声的本征模",
+  "date": "2025-12-06",
+  "tags": [
+    "不适定逆问题",
+    "正则化",
+    "牛顿法"
+  ],
+  "abstract": "严格证明含正则化的高斯-牛顿法本质是白化滤波的 Landweber，信赖域截断剥离危险小特征值。",
+  "body": [
+    {
+      "type": "p",
+      "text": "在不适定反问题的非线性场景中,如全波形反演(FWI)、光声定量与参数识别,目标泛函 $J(x) = \\tfrac{1}{2}\\|F(x) - y\\|^2$ 通常具有强非凸性,梯度下降法收敛极慢。出于对二阶收敛速率的追求,研究者常诉诸牛顿法或高斯-牛顿迭代。然而,这种“提速”在不适定语境下隐藏着深刻危机,本文将其命名为**禁忌**。"
+    },
+    {
+      "type": "p",
+      "text": "核心机制在于:对于不适定问题,Hessian 矩阵 $H = J^{\\top}J$ 的谱 $\\{\\sigma_i^2\\}$ 呈急剧衰减($\\sigma_i^2 = O(i^{-2p})$, $p > 1/2$)。其逆 $H^{-1}$ 的谱则剧烈膨胀 $O(i^{2p})$。在牛顿步 $x^{k+1} = x^k - H(x^k)^{-1}\\,\\nabla J(x^k)$ 中,小 $\\sigma_i^2$ 方向上的噪声 $\\delta y$ 被放大 $i^{2p}$ 倍,导致对应本征模的更新被噪声主导,迭代迅速发散。"
+    },
+    {
+      "type": "math",
+      "latex": "x^{k+1} = x^k - (J^{\\top}J + \\alpha I)^{-1}\\,J^{\\top}(J x^k - y) = x^k - \\sum_{i=1}^{\\infty} \\frac{\\sigma_i}{\\sigma_i^2 + \\alpha}\\,\\langle r^k, u_i\\rangle v_i",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "含正则化的高斯-牛顿迭代可写为谱滤波形式。**命题**(白化滤波的 Landweber 等价性):上述更新方向 $d^k$ 在 $J^{\\top}J$ 的本征基下,可被显式分解为 $d^k = -\\sum_i w_i(\\alpha)\\,\\langle r^k, u_i\\rangle v_i$,其中滤波函数 $w_i(\\alpha) = \\sigma_i/(\\sigma_i^2 + \\alpha)$ 在 $\\sigma_i \\gg \\sqrt\\alpha$ 区域近似为 $1/\\sigma_i$(即 SVD 截断的“软”反演),在 $\\sigma_i \\ll \\sqrt\\alpha$ 区域近似为 $\\sigma_i/\\alpha$(Landweber 风格),呈现谱依赖的双区行为。"
+    },
+    {
+      "type": "math",
+      "latex": "w_i(\\alpha) = \\frac{\\sigma_i}{\\sigma_i^2 + \\alpha} = \\begin{cases} 1/\\sigma_i, & \\sigma_i \\gg \\sqrt\\alpha \\\\[4pt] \\sigma_i/\\alpha, & \\sigma_i \\ll \\sqrt\\alpha \\end{cases}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**定理**(二阶禁忌的频域刻画):对高斯-牛顿迭代 $x^{k+1} = x^k - d^k$,若 $J^{\\top}J$ 的最小非零特征值为 $\\sigma_{\\min}^2$,则误差传播算子在 $\\sigma_{\\min}$ 方向上的本征值模为 $|1 - \\sigma_{\\min}^2/(\\sigma_{\\min}^2 + \\alpha)|$。当 $\\sigma_{\\min}^2 \\ll \\alpha$ 时,本征值 $\\to 1$,该方向上误差不被衰减;当 $\\sigma_{\\min}^2 \\gg \\alpha$ 时,本征值 $\\to 0$,该方向误差被压缩。**这意味着 $\\alpha$ 充当了二阶优化的硬截断阈值。**"
+    },
+    {
+      "type": "p",
+      "text": "基于上述分析,我们提出**信赖域截断**方案:在每步的牛顿方向 $d^k$ 上,显式剔除满足 $\\sigma_i < \\sigma_{\\mathrm{cut}}$ 的特征值方向,等价于求解 $d^k = -\\arg\\min_{d \\in \\mathcal{V}}\\{\\tfrac{1}{2}d^{\\top}H d + g^{\\top}d\\}$,其中可行域 $\\mathcal{V} = \\mathrm{span}\\{v_i : \\sigma_i \\ge \\sigma_{\\mathrm{cut}}\\}$。该方案在“信赖域”与“谱截断”之间建立了精确对应。"
+    },
+    {
+      "type": "math",
+      "latex": "d^k_{\\mathrm{TR}} = -\\sum_{i:\\sigma_i \\ge \\sigma_{\\mathrm{cut}}} \\frac{\\langle r^k, u_i\\rangle}{\\sigma_i}\\,v_i, \\quad \\sigma_{\\mathrm{cut}} = \\tau\\,\\sigma_{\\max}, \\;\\tau \\in (0, 1)",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**讨论与展望**:本文将二阶优化在不适定问题中的“禁忌”清晰化为谱滤波函数的临界行为:含正则化的高斯-牛顿本质是带白化的 Landweber 迭代,$\\alpha$ 既是 Tikhonov 罚项权重也是谱硬截断的隐式阈值。信赖域截断方案提供了显式剥离危险小特征值方向的算法机制,在 FWI 与光声反演中已展现出对局部极小的逃逸能力。后续研究将探索 Levenberg-Marquardt 自适应调整 $\\sigma_{\\mathrm{cut}}$ 的后验策略,以及与共轭梯度法的协同框架。"
+    }
+  ]
+}

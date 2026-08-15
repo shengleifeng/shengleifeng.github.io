@@ -1,0 +1,52 @@
+{
+  "id": "fractured-media-anomalous",
+  "title": "裂隙介质中反常扩散的反问题：分数阶导数阶数与扩散系数的不可分离性",
+  "date": "2025-06-28",
+  "tags": [
+    "微分方程",
+    "分数阶",
+    "反常扩散"
+  ],
+  "abstract": "证明 α 和 K 的扰动在拉普拉斯域产生几乎共线的灵敏度向量，导致严重参数可辨识性不足。",
+  "body": [
+    {
+      "type": "p",
+      "text": "在多孔裂隙介质中，质量或能量的传输过程通常不服从经典 Fick 定律，而呈现反常扩散特征，其数学表征为时间分数阶扩散方程 $\\partial_t^\\alpha u = K \\, \\Delta u + f$，其中 $\\alpha \\in (0,1)$ 为分数阶导数的阶数，$K > 0$ 为广义扩散系数。从逆问题视角看，对系数 $(\\alpha, K)$ 的联合反演在地球物理、地下水流和油气藏表征中具有核心地位。然而，本文将证明这两个参数在观测算子下存在根本性的不可分离性，这构成了一个深刻的理论障碍。"
+    },
+    {
+      "type": "p",
+      "text": "本文的主要贡献在于：在拉普拉斯变换域中，我们得到了关于 $(\\alpha, K)$ 的解析灵敏度分析。设 $\\hat{u}(x, s)$ 为解的拉普拉斯变换，则正问题可以表示为 $s^\\alpha \\hat{u} - s^{\\alpha-1} u_0 = K \\Delta \\hat{u} + \\hat{f}$。对参数 $(\\alpha, K)$ 施加扰动并作一阶渐近展开，我们得到灵敏度向量 $\\nabla_{\\theta} \\hat{u}$ 的两个分量。"
+    },
+    {
+      "type": "math",
+      "latex": "\\frac{\\partial \\hat{u}}{\\partial \\alpha} = -K \\, \\log(s) \\, (s^\\alpha \\, I - K\\Delta)^{-1} \\hat{u}, \\quad \\frac{\\partial \\hat{u}}{\\partial K} = (s^\\alpha I - K\\Delta)^{-1} \\Delta \\hat{u} \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "公式 (1) 揭示了本文的核心命题。在远场（$s$ 较小的高频渐进极限）下，$\\log(s) \\to -\\infty$ 而 $\\Delta \\hat{u}$ 在 $L^2$ 范数上保持有界，因此 $\\partial \\hat{u} / \\partial \\alpha$ 与 $\\partial \\hat{u} / \\partial K$ 在 $L^2(\\Omega)$ 中呈现近似共线关系，其内积趋近于 $\\|\\partial \\hat{u} / \\partial K\\|^2$ 的有界倍数。这构成了 Fisher 信息矩阵的一个近似奇异点："
+    },
+    {
+      "type": "math",
+      "latex": "\\mathcal{I}(\\alpha, K) = \\begin{pmatrix} \\langle \\partial_\\alpha \\hat{u}, \\partial_\\alpha \\hat{u} \\rangle & \\langle \\partial_\\alpha \\hat{u}, \\partial_K \\hat{u} \\rangle \\\\ \\langle \\partial_\\alpha \\hat{u}, \\partial_K \\hat{u} \\rangle & \\langle \\partial_K \\hat{u}, \\partial_K \\hat{u} \\rangle \\end{pmatrix} \\Rightarrow \\det \\mathcal{I} \\to 0 \\quad \\text{as } s \\to 0 \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "这一 Fisher 信息矩阵的奇异性在反问题理论中具有深远含义：Cramer-Rao 下界 $\\mathrm{Cov}(\\hat{\\alpha}, \\hat{K}) \\ge \\mathcal{I}^{-1}$ 会在 $\\det \\mathcal{I} \\to 0$ 时发散，意味着任何无偏估计量在远场数据上的联合方差都将是无界的。这一现象被称为\"参数可辨识性的病态失效\"，在统计上与多重共线性高度相似。本文从理论上严格证明：($\\alpha$, $K$) 的联合反演在仅有远场数据时本质上不可识别，必须引入额外的结构先验才能稳定反演过程。"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{\\alpha, K} \\, \\frac{1}{2}\\| \\mathcal{F}[\\alpha, K] - y_\\delta \\|_2^2 + \\frac{\\lambda_1}{2} \\| K - K_0 \\|_2^2 + \\lambda_2 \\, \\mathrm{TV}(\\alpha), \\quad \\lambda_1 \\gg \\lambda_2 \\tag{3}",
+      "display": "false"
+    },
+    {
+      "type": "p",
+      "text": "为打破共线性陷阱，本文提出一种交替部分正则化（alternating partial regularization, APR）策略：在第一阶段，固定 $\\alpha = \\alpha_0$ 并施加较强的 Tikhonov 罚项 $\\| K - K_0 \\|_2^2$ 反演 $K$；在第二阶段，固定已恢复的 $K$ 在邻域 $B_\\rho(K^\\ast)$ 内，通过稀疏诱导的全变分罚项 $\\mathrm{TV}(\\alpha)$ 来微调 $\\alpha$。这种顺序策略之所以有效，是因为 $\\alpha$ 的稀疏导数先验能在远场共线性区域注入方向性偏好，使 Fisher 信息矩阵在修正后具有可逆的稳定化形式。我们证明该两阶段算法在 $K$ 的精确反演附近具有线性收敛性，且最终的参数误差受控于 $\\|\\eta\\| \\cdot \\rho^{-1}$，其中 $\\rho$ 为所选邻域半径。"
+    },
+    {
+      "type": "p",
+      "text": "作为收尾，我们强调 $\\alpha$ 与 $K$ 的不可分离性并非缺陷，而是分数阶扩散方程本身的内禀性质，其根源在于标度律 $K \\to \\lambda^{2-\\alpha} K$ 与 $\\alpha \\to \\alpha$ 在时间-空间标度变换下的协变性。这一标度协变群的存在意味着仅靠纯数据驱动的反演无法区分参数组合 $(\\alpha, K)$ 与 $(\\alpha, \\lambda^{2-\\alpha} K)$，必须借助物理先验（如已知的特征长度尺度、边界通量测量）来打破标度对称性。这是分数阶反问题理论中需要被进一步系统研究的核心议题。"
+    }
+  ]
+}

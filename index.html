@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="冯圣磊 (Shenglei Feng) 的个人学术主页：不适定逆问题与正则化理论、计算成像。" />
+    <title>冯圣磊 (Shenglei Feng) | 个人学术主页</title>
+    <script>
+      // Single Page Apps for GitHub Pages
+      // https://github.com/rafgraph/spa-github-pages
+      // ----------------------------------------------------------------------
+      // 配对的反向脚本：检查 URL 是否带有 404.html 写入的 ?p=... / ?q=...。
+      // 如果有，用 history.replaceState 把地址栏还原成访问者原本想去的路径，
+      // 再让 Vue Router 正常初始化。必须放在 /src/main.js 之前。
+      // ----------------------------------------------------------------------
+      (function (l) {
+        if (l.search) {
+          var q = {};
+          l.search.slice(1).split('&').forEach(function (v) {
+            var a = v.split('=');
+            q[a[0]] = a.slice(1).join('=');
+          });
+          if (q.p !== undefined) {
+            window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + (q.p || '') +
+              (q.q ? ('?' + q.q.replace(/~and~/g, '&')) : '') +
+              l.hash
+            );
+          }
+        }
+      }(window.location));
+    </script>
+    <script type="module" crossorigin src="/assets/index-N9PmE5zg.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BMLbtW0X.css">
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>

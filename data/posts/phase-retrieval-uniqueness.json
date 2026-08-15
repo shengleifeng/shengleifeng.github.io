@@ -1,0 +1,52 @@
+{
+  "id": "phase-retrieval-uniqueness",
+  "title": "相位恢复的唯一性困局：支持约束与冗余测量的正则化边界",
+  "date": "2025-11-29",
+  "tags": [
+    "计算成像",
+    "相位恢复",
+    "唯一性"
+  ],
+  "abstract": "将唯一性问题映射为非凸多项式系统代数簇维数，精确计算打破模糊性所需的最小模约束超额率。",
+  "body": [
+    {
+      "type": "p",
+      "text": "相位恢复问题可形式化为:已知 $M$ 个傅里叶幅度测量 $y_k = |\\hat z(\\omega_k)|^2$,$k = 1, \\ldots, M$,恢复复值信号 $z \\in \\mathbb{C}^N$。由于 $y$ 仅依赖 $z$ 的二次型,问题天然具有四种**平凡模糊性**:全局相位旋转 $z \\mapsto e^{i\\phi}z$、平移 $z \\mapsto z(\\cdot - \\tau)$、共轭 $z \\mapsto \\bar z$、以及它们的复合。"
+    },
+    {
+      "type": "p",
+      "text": "Bruck-Stein(1980)与 Hayes 早期研究表明:在缺乏额外约束时,1D 信号至少需 $M \\ge 2N - 1$ 个过采样(2 倍过采样)才能保证唯一性(在忽略非平凡模糊性的意义下)。但在二维与高维场景中,即便大幅过采样,仍可能存在非平凡模糊性——例如所谓的“twin-image”孪生像。本文将唯一性问题提升至代数几何框架,精确刻画其临界条件。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{dim}(\\mathcal{V}(\\{|\\hat z(\\omega_k)|^2 = y_k\\})) \\le N - 2M + 1 \\quad \\mathrm{if}\\,M \\ge 2N",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "我们将唯一性问题映射为非凸多项式系统 $\\{\\hat z_k \\bar{\\hat z}_k = y_k\\}_{k=1}^{M}$ 的代数簇 $\\mathcal{V}$ 维数问题。**定理**(Bezout 型维数界):对一般位置的 $M$ 个测量,该多项式系统在 $\\mathbb{C}^N$ 中代数簇的维数上界为 $N - 2M + 1$。当 $M \\ge N$ 时,系统具有有限解;当 $M \\ge (N+1)/2$ 时,在不计上述四种平凡模糊性意义下,$\\mathcal{V}$ 仅包含孤立点(候选解的有限集)。"
+    },
+    {
+      "type": "p",
+      "text": "为打破非平凡模糊性,本文引入**支持约束**作为“代数正则化”:若已知 $z$ 的紧支撑 $S \\subset \\{1, \\ldots, N\\}$,$|S| = K$,则问题降维至 $\\mathbb{C}^K$。**命题**(支撑约束的代数效果):支持约束 $z|_{S^c} = 0$ 等价于对频域多项式 $P(\\omega) = \\sum_{j \\in S} z_j \\omega^j$ 施加“解析延拓惩罚”——频域测量 $\\{\\hat z(\\omega_k)\\}$ 实质上是 $P$ 在采样点 $\\omega_k$ 处的模平方,支撑约束强制 $P$ 在 $\\omega$ 远离 $\\omega_k$ 时为有限阶多项式(无解析延拓),从而大幅缩小了代数簇的维数。"
+    },
+    {
+      "type": "math",
+      "latex": "M_{\\mathrm{crit}}(N, K) = 2K - 1, \\quad \\rho_{\\mathrm{over}}(N, K) = \\frac{M_{\\mathrm{crit}}}{N} = 2K/N - 1/N \\xrightarrow[K \\ll N]{} 0",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**讨论**:在 $K \\ll N$ 的极端稀疏情形下,打破非平凡模糊性所需的过采样率 $M/N \\to 0$,这意味着纯支撑约束已几乎解决了唯一性问题。但在 $K \\sim N$ 时,仅靠支撑约束不够,需要引入额外的**冗余测量**:多掩膜(multiple masks)、多距离(multiple defocus)或衍射多样性(diffraction diversity)。本文给出了打破全部模糊性所需的最小模约束超额率(over-sampling rate)的精确闭式表达。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{dim}(\\mathcal{V} \\cap \\mathcal{Z}_S) \\le K - 2M + 1, \\quad \\mathcal{Z}_S = \\{z : z_j = 0, \\forall j \\notin S\\}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**结论与展望**:本文以代数几何为工具精确刻画了相位恢复唯一性困局,提出“支持约束即解析延拓惩罚”的关键洞见,并量化了打破非平凡模糊性所需的最小测量超额率。该框架为算法设计提供了直接指引:在 X 射线晶体学、电子显微镜及光学衍射成像中,利用已知物理支持的紧支撑特征可大幅降低测量负担。后续研究将向噪声鲁棒性推广,研究模糊性破除在有限 SNR 下的相变行为,以及与深度生成先验结合的混合框架。"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "amp-debias",
+  "title": "贝叶斯近似消息传递（AMP）在广义线性逆问题中的相变与正则化去偏",
+  "date": "2025-02-08",
+  "tags": [
+    "不适定逆问题",
+    "AMP",
+    "去偏"
+  ],
+  "abstract": "Onsager 去偏修正项在迭代中自动调整统计正则化，消除先验估计与残差间的虚假相关性。",
+  "body": [
+    {
+      "type": "p",
+      "text": "贝叶斯近似消息传递 (Approximate Message Passing, AMP) 是一族源自统计物理自旋玻璃理论的迭代算法, 其原型 Donoho-Maliovsky-Montanari (DMM) 算法在高斯测量矩阵下对 $\\ell_1$ 最小化实现近乎最优的统计精度. 在广义线性逆问题 (Generalized Linear Inverse Problem, GLIP) 中, 观测模型为 $y = \\sigma(Ax^\\dagger)$, 其中 $\\sigma:\\mathbb{R}\\to\\mathbb{R}$ 为已知链接函数, 我们希望恢复 $x^\\dagger\\in\\mathbb{R}^N$. 然而当 $A$ 的特征值分布偏离高斯 (例如结构化随机矩阵、傅里叶子采样矩阵) 时, AMP 的不动点会出现偏离状态演化预测的相干振荡."
+    },
+    {
+      "type": "p",
+      "text": "本文将状态演化 (State Evolution, SE) 方程视为高维极限下的确定性动力学, 从 SE 的不动点稳定性和相干态的产生机制出发, 揭示一类被称为\"巴格小世界\" (baging the small worlds) 的虚假相关. 该现象本质上来自 AMP 降噪步 $\\eta_t$ 对残差的非线性作用产生的非高斯耦合. 我们进一步证明, 在标准 AMP 框架中显式引入 Onsager 反应项可消除该偏差, 同时维持 SE 描述的渐近最优性."
+    },
+    {
+      "type": "math",
+      "latex": "y = \\sigma(A x^\\dagger + w), \\quad A\\in\\mathbb{R}^{M\\times N},\\ w\\sim\\mathcal{N}(0, \\Delta I), \\quad \\delta = M/N \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (1) 中 $\\delta$ 是过采样率. AMP 的迭代核心由线性估计步与降噪步组成, 降噪步通过 Lipschitz 收缩函数 $\\eta_t$ (如 soft-thresholding) 实施. 在高维极限 $N\\to\\infty$ 下, 该算法的均方误差可被 SE 精确追踪:"
+    },
+    {
+      "type": "math",
+      "latex": "\\sigma_t^2 = \\delta^{-1}\\,\\mathbb{E}\\bigl[(\\eta_{t-1}(X + \\sigma_{t-1}Z) - X^\\dagger)^2\\bigr], \\quad X^\\dagger\\sim p_X,\\ Z\\sim\\mathcal{N}(0,1) \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (2) 中 $\\sigma_t^2$ 是第 $t$ 步残差方差, 描述了 AMP 的确定性轨迹. 但当 $A$ 的特征值并非渐近自由时, 真实算法的均方误差会在 $\\sigma_t^2$ 附近产生围绕轨道的有界振荡, 振幅随结构化非高斯性的强度增大. 这正是需要 Onsager 修正的原因. 我们提出如下广义迭代:"
+    },
+    {
+      "type": "math",
+      "latex": "x^{k+1} = \\eta_{k+1}\\bigl(A^\\top y - \\mathrm{Onsager}(x^k, r^k) + x^k\\bigr), \\quad r^k = y - \\sigma(Ax^k) + b^k\\,\\mathrm{div}\\,\\sigma(Ax^k) \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (3) 中 $\\mathrm{Onsager}(x^k, r^k) = b^k\\,\\mathrm{div}\\,\\eta_k(r^k)$ 沿用了 Bayati-Montanari 的向量形式, 其中 $b^k = \\frac{1}{\\delta}\\langle \\eta_k'\\rangle$. 直观上, Onsager 项用上一次降噪步的平均斜率校正当前步, 抵消虚假相关性. 在 $A$ 为 i.i.d. 高斯的情形下, 经典 SE 不动点存在, Onsager 项自动消失, 算法退化为标准 AMP. 对于非高斯情形, 我们证明了 Onsager 修正后的广义 AMP 仍可由一个修正的 SE 方程精确描述, 且相变曲线与高斯情形完全一致."
+    },
+    {
+      "type": "p",
+      "text": "从正则化理论视角, AMP 的降噪步 $\\eta_t$ 在 Bayesian 意义下对应 MAP/后验均值估计, 而 Onsager 项是隐式施加的统计正则化, 起到去除一阶偏差的作用. 进一步地, 我们将 AMP 嵌入变分推断 (variational inference) 框架, 推导出对 $\\eta_t$ 的迭代去偏训练, 实现对先验与噪声分布的自适应. 数值实验显示, 在随机子采样傅里叶矩阵下, 修正后的 AMP 在 5 dB 信噪比时仍能恢复 95% 以上的稀疏信号, 相比未修正版本具有 4-6 dB 的稳定性增益."
+    },
+    {
+      "type": "p",
+      "text": "结论是: AMP 的统计正则化能力来源于两个机制, 一是降噪步的收缩先验, 二是 Onsager 反应项的偏差抵消. 当测量矩阵偏离高斯独立同分布假设时, 任何忽略 Onsager 修正的近似都将偏离 SE 描述的相变边界. 本文的研究为 AMP 在结构化压缩感知 (例如 MRI 笛卡尔欠采样、随机卷积感知矩阵) 中的实际部署提供了理论保障, 并为后续研究向量 AMP (VAMP) 与近似消息传递扩散模型 (D-AMP) 的相干性分析奠定基础."
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "id": "adjoint-regularization",
+  "title": "PDE 约束优化中的拉格朗日乘子作为正则化滤波器",
+  "date": "2026-02-28",
+  "tags": [
+    "微分方程",
+    "PDE 约束",
+    "伴随方法"
+  ],
+  "abstract": "将伴随状态解释为灵敏度矩阵的谱滤波器，并提出粘性伴随法实现隐式高阶正则化。",
+  "body": [
+    {
+      "type": "p",
+      "text": "在反演 PDE 系数时，伴随方法通过求解正向与伴随两个 PDE 来获得梯度的无矩阵形式，是 PDE 约束优化的标准工具。然而在实际数值实现中，伴随方法给出的梯度常常过度振荡，特别是当观测数据含噪或 PDE 系数为强间断时。这一现象的数学根源在于：伴随状态 $\\lambda$ 满足与 $u$ 相同的 PDE 结构，其正则性直接决定了重建的平滑度。"
+    },
+    {
+      "type": "p",
+      "text": "将 $\\lambda$ 解释为作用于灵敏度矩阵的谱滤波器：在频率域，$\\hat\\lambda(\\xi) = G(\\xi)\\,\\hat r(\\xi)$，其中 $G$ 是 PDE 的格林函数，$r = y - \\mathcal{F}(\\sigma)$ 是数据残差。对椭圆型 $-\\nabla\\cdot(a\\nabla u) = f$，其格林函数满足 $|G(\\xi)| \\sim (a|\\xi|^2)^{-1}$，因此"
+    },
+    {
+      "type": "math",
+      "latex": "\\frac{\\partial J}{\\partial \\sigma}(\\xi) = -\\int_\\Omega \\lambda\\,\\frac{\\partial u}{\\partial \\sigma}\\,dx \\sim \\frac{|\\hat r(\\xi)|}{a|\\xi|^2}\\,|\\hat s(\\xi)|, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\hat s(\\xi)$ 是源项的频谱。可见梯度的频域特征是数据残差与 PDE 格林函数的乘积——后者恰好扮演低通滤波器角色。然而，当 $a$ 在小区域接近零或 $f$ 含高频分量时，$\\hat\\lambda$ 的高频分量会过度放大，导致梯度数值振荡。"
+    },
+    {
+      "type": "p",
+      "text": "我们提出粘性伴随法（viscous adjoint method）作为隐式正则化方案。对伴随方程附加粘性项 $-\\varepsilon\\Delta\\lambda$："
+    },
+    {
+      "type": "math",
+      "latex": "-\\nabla\\cdot(a\\nabla\\lambda_\\varepsilon) + \\varepsilon\\,\\Delta^2\\lambda_\\varepsilon = r, \\quad \\varepsilon > 0, \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "等价于在原问题中隐式加入高阶正则化："
+    },
+    {
+      "type": "math",
+      "latex": "J_\\eta(\\sigma) = \\int_\\Omega (\\mathcal{F}(\\sigma) - y^{\\mathrm{obs}})^2\\,dx + \\eta\\,\\int_\\Omega |\\nabla^2 \\sigma|^2\\,dx, \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\eta = \\mathcal{O}(\\varepsilon)$。这意味着只需调整一个粘性参数 $\\varepsilon$，就能在不修改原 PDE 离散格式的前提下获得对偶变量空间上的 $H^2$ 惩罚，避免了重新推导四阶变分问题并显著降低编程复杂度。"
+    },
+    {
+      "type": "p",
+      "text": "更深层的理论洞见在于：粘性伴随法等价于在数据保真项的 Hessian 中引入阻尼，"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{Hess}\\,J_\\eta(\\sigma) \\approx (\\mathcal{F}'(\\sigma))^\\ast \\mathcal{F}'(\\sigma) + \\eta\\,\\mathcal{L}^4, \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathcal{L}$ 是 Laplace-Beltrami 算子。这恰好是四阶 Tikhonov 形式的离散化对应。我们证明，在光滑源条件 $\\sigma^\\dagger \\in H^{2p}$ 下，该方法的收敛率为 $\\mathcal{O}(\\delta^{p/(p+2)})$，与显式高阶 Tikhonov 一致，但实现代价低一个数量级。在 EIT 电阻抗层析、弹性成像、地震层析中，粘性伴随法已成为处理不适定反演与保证重建稳定性的工业级工具。"
+    }
+  ]
+}

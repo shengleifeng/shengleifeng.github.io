@@ -1,0 +1,65 @@
+{
+  "id": "pseudo-inverse-truncation",
+  "title": "算子 K 的\"伪逆核\"与截断 SVD：一个关于截断参数角色的信息论再议",
+  "date": "2024-09-28",
+  "tags": [
+    "不适定逆问题",
+    "截断 SVD",
+    "信息论"
+  ],
+  "abstract": "将截断索引诠释为保留总信息量的特定百分比，建立有效自由度与带宽之间的非线性关系。",
+  "body": [
+    {
+      "type": "p",
+      "text": "截断奇异值分解 (TSVD) 是最古老也最常用的不适定逆问题正则化手段: 给定紧算子 $K:X\\to Y$ (在 $X,Y$ 为 Hilbert 空间时) 的奇异值系统 $\\{(\\sigma_i, u_i, v_i)\\}$, TSVD 解为 $x_k=\\sum_{i=1}^{k}\\sigma_i^{-1}\\langle y, u_i\\rangle v_i$, 截断索引 $k$ 是控制偏差与方差的唯一旋钮。传统理论 (Hansen, 1998; Engl et al., 1996) 将 $k$ 视为待选取的正则化参数, 并通过 Morozov 偏差原理、广义交叉验证 (GCV) 或 L 曲线准则进行选择。本文旨在从信息论视角重新解读 $k$ 的角色: 它不仅是“截断程度”, 更承担着“保留数据总信息量的特定百分比”的信息压缩功能, 并据此推导一种比经典准则更鲁棒的截断选取方案。"
+    },
+    {
+      "type": "p",
+      "text": "在经典 Tikhonov 正则化理论中, $K$ 的紧性意味着奇异值序列 $\\sigma_i\\to 0$, 衰减率决定了不适定的“困难等级”。本文引入“相对信息含量” (Relative Information Content, RIC) 函数 $\\mathcal{I}(k) = \\sum_{i=1}^{k}\\sigma_i^2 / \\sum_{i=1}^{\\infty}\\sigma_i^2$, 它度量了前 $k$ 个奇异值对 $K$ 的能量贡献比例。截断准则因此可重写为"
+    },
+    {
+      "type": "math",
+      "latex": "k(\\eta) = \\min\\{k\\in\\mathbb{N}: \\mathcal{I}(k) = \\sum_{i=1}^{k}\\sigma_i^2 / \\sum_{i=1}^{\\infty}\\sigma_i^2 \\ge 1 - \\eta\\},\\quad \\eta\\in[0,1]. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\eta$ 是允许的“信息损失率”。直观上, $\\mathcal{I}(k)$ 是 $K$ 的“累积谱占比”, 截断即在谱域执行信息压缩。设 $\\sigma_i\\sim C\\,i^{-p}$ (代数衰减) 或 $\\sigma_i\\sim Ce^{-\\alpha i}$ (指数衰减), 我们证明 $\\mathcal{I}(k)$ 的收敛速率由源条件 $x^\\dagger\\in\\mathcal{R}((K^*K)^{\\mu})$ 的 $\\mu$ 决定, 并得到截断索引 $k$ 与有效自由度 (effective degrees of freedom) 之间的非线性关系:"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{effDoF}(k) = \\sum_{i=1}^{k} f_i(\\sigma_i),\\quad f_i(\\sigma_i)=\\sigma_i^2/(\\sigma_i^2+\\lambda), \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\lambda$ 为 Tikhonov 参数 (在 $k$ 截断下等价 $\\sigma_k\\approx\\sqrt{\\lambda}$)。对代数衰减 $\\sigma_i\\sim i^{-p}$, 我们推导出关键标度律:"
+    },
+    {
+      "type": "math",
+      "latex": "W(k) \\sim k^{1/\\mu},\\quad \\mathrm{effDoF}(k) \\sim k^{1-2\\mu/(2\\mu+1)}, \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $W(k)$ 为重构解的有效带宽。该标度律揭示了一个重要事实: 截断索引 $k$ 与有效自由度之间是亚线性的 ($1-2\\mu/(2\\mu+1)<1$), 即“加一个奇异值”对解的复杂度的边际贡献递减。这是经典偏差-方差图景的信息论翻译, 偏差对应被截断的“信息损失”, 方差对应被保留的“谱信息对噪声的放大”。"
+    },
+    {
+      "type": "p",
+      "text": "基于上述理论, 本文提出信息压缩感知准则 (Information-Compressive Sensing Rule, ICR):"
+    },
+    {
+      "type": "math",
+      "latex": "k_{\\mathrm{ICR}} = \\min\\{k: \\mathcal{I}(k)\\ge 1 - c\\,\\delta^2/\\|y\\|^2\\}, \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\delta$ 为噪声水平, $c$ 为数值常数 (推荐 $c=2$)。该准则的精神是: 仅当某个奇异值方向的信噪比 $\\sigma_i^2/\\delta^2$ 超过某阈值时, 该方向的信息才是“可信的”, 应予保留; 否则视为噪声放大源, 截断之。该准则在非白谱 (如 $\\sigma_i$ 不等衰减) 时比 Morozov 偏差原理更稳定, 因为后者在谱间存在过渡区 (即 $\\sigma_i^2\\sim\\delta^2$ 的几个 $i$) 时会因 $\\|A x_k - y\\|\\approx\\delta$ 出现多个解。ICR 的优势在于: $\\mathcal{I}(k)$ 是 $k$ 的单调递增函数, 不存在多解, 且只需 $\\delta$ 的渐近估计, 不需要精确值。"
+    },
+    {
+      "type": "p",
+      "text": "讨论与权衡: ICR 准则与 GCV 在白谱极限下渐近等价, 但在低信噪比、相关测量或非齐次噪声时, ICR 表现出对数据分布更强的鲁棒性。另一权衡在于: 当 $\\sigma_i$ 衰减极快 (指数型) 时, $\\mathcal{I}(k)$ 的曲线在 $k\\approx k^*$ 处有急剧跳跃, 此时 $c$ 的选取变得敏感, 我们建议 $c$ 取保守值 (1.0-2.0) 以避免截断过深。结论上, 本文将截断 SVD 从“经验旋钮”提升为“信息论压缩率”的可定量角色, 并通过标度律 (式 (3)) 阐明了 $k$ 与解的有效复杂度的本质关系。这一信息论再议不仅为正则化参数选择提供新工具, 也为随机矩阵理论中的 Marchenko-Pastur 定律、谱相变等概念与不适定逆问题之间建立了直接桥梁。"
+    }
+  ]
+}

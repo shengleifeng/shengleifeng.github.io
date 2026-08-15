@@ -1,0 +1,57 @@
+{
+  "id": "tdot-tv",
+  "title": "时域扩散光学层析成像：一个严重不适定问题的全变分挽救",
+  "date": "2026-04-18",
+  "tags": [
+    "计算成像",
+    "DOT",
+    "全变分"
+  ],
+  "abstract": "分析 DOT 的极端病态性与 TV 正则化的优势，以及阶梯效应带来的虚假小病灶风险。",
+  "body": [
+    {
+      "type": "p",
+      "text": "时域扩散光学层析（Time-Domain Diffuse Optical Tomography, TD-DOT）通过测量光子飞行时间分布（temporal point spread function, TPSF）反推组织的光学参数（吸收系数 $\\mu_a$ 与散射系数 $\\mu_s'$）。其物理基础是辐射传输方程在强散射极限下的扩散近似："
+    },
+    {
+      "type": "math",
+      "latex": "\\frac{1}{c}\\frac{\\partial \\Phi}{\\partial t} - \\nabla \\cdot (D \\nabla \\Phi) + \\mu_a \\Phi = S(\\mathbf{r}, t), \\quad D = \\frac{1}{3(\\mu_a + \\mu_s')}. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "DOT的灵敏度矩阵 $J$ 由TPSF对参数的Fréchet导数构成：$J_{ij}(t) = \\partial \\Phi_j(t) / \\partial \\mu_a(\\mathbf{r}_i)$。由于光子在组织内经历多次散射，$J$ 极度病态：条件数可达 $10^{10}$ 以上，奇异值呈现近似指数衰减 $\\sigma_i \\sim e^{-ci}$，属于典型的\"严重不适定\"逆问题。频域分析表明，$J$ 的有效秩随频率升高而迅速下降，使得高频信息几乎无法利用。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{cond}_2(J) = \\frac{\\sigma_{\\max}(J)}{\\sigma_{\\min}(J)} \\ge 10^{10}, \\quad \\sigma_i(J) \\sim e^{-ci}, \\quad i \\to \\infty. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "组织中的许多病灶（如血肿、囊肿、肿瘤）具有近似分段常数的空间结构，完美匹配TV正则化的几何假设。TV-DOT的目标函数为"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{x\\ge 0}\\,\\tfrac{1}{2}\\|Jx - y^{\\delta}\\|_2^2 + \\lambda\\,\\mathrm{TV}(x) = \\min_{x\\ge 0}\\,\\tfrac{1}{2}\\|Jx - y^{\\delta}\\|_2^2 + \\lambda\\int_{\\Omega}\\|\\nabla x\\|_2\\,d\\mathbf{r}. \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "TV正则化在DOT中的优势体现在两方面：(1) 几何结构契合——分段常数假设与组织光学特性的空间非均匀性高度匹配；(2) 边界保持——TV的各向异性扩散倾向于产生沿梯度方向的连续变化，在抑制背景弥散噪声的同时能锐利保持病灶边界，使得在Tikhonov正则化下会模糊的小体积病灶得以清晰显示。这一优势在脑功能成像与乳腺肿瘤检测中已被广泛验证。"
+    },
+    {
+      "type": "p",
+      "text": "然而，TV的\"阶梯效应\"会引发特定伪影：在原本平滑过渡的生理边界附近（如脑灰质与白质间的渐变吸收区），TV可能被分割为多个\"伪小体积病灶\"，造成假阳性诊断。数值上表现为图像的局部梯度场 $\\theta(\\mathbf{r})$ 在非物理位置出现极端的方向集中，破坏了组织应有的连续性。"
+    },
+    {
+      "type": "math",
+      "latex": "\\theta(\\mathbf{r}) \\in \\{e_1, e_2\\} \\cup \\{0\\}, \\quad \\text{(staircase pattern)}. \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "一种改进策略是引入TGV（Total Generalized Variation）保持过渡区的连续性，其增广梯度结构允许中间过渡区的方向场连续变化。TGV-DOT的目标函数为 $\\min_{x\\ge 0, w} \\tfrac{1}{2}\\|Jx - y^{\\delta}\\|_2^2 + \\beta_1\\|\\nabla x - w\\|_1 + \\beta_2\\|\\mathcal{E}w\\|_1$，其中 $\\mathcal{E}$ 是对称梯度算子。这一推广在数值上引入额外的对偶变量 $w$，但能显著减少虚假小体积病灶的出现率。实践中我们建议采用FISTA或原始-对偶Chambolle-Pock算法求解，配合参数 $(\\beta_1, \\beta_2)$ 的交叉验证调优——这是DOT从分段常数假设向更精细组织结构建模的方法论升级。"
+    }
+  ]
+}

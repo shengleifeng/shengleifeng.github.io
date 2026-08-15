@@ -1,0 +1,52 @@
+{
+  "id": "operator-valued-kernel",
+  "title": "基于算子值核函数的正则化网络：为向量场逆问题量身定做先验",
+  "date": "2025-06-07",
+  "tags": [
+    "正则化理论",
+    "算子值核",
+    "向量场"
+  ],
+  "abstract": "算子值 RKHS 框架自然编码旋度、散度等矢量几何性质，最小范数插值解与微分算子基函数相关联。",
+  "body": [
+    {
+      "type": "p",
+      "text": "向量场逆问题在科学与工程中无处不在：麦克斯韦方程组的反源、纳维-斯托克斯方程的流场重建、弹性力学的位移-应力反演、地球物理电磁勘探中的电流密度反演等。它们的共同数学结构是：待求函数 $f: \\Omega \\to \\mathbb{R}^d$（$d = 2$ 或 $3$）受限于某些物理约束，如无散条件 $\\nabla \\cdot f = 0$、无旋条件 $\\nabla \\times f = 0$ 或亥姆霍兹分解 $f = \\nabla \\phi + \\nabla \\times \\psi$。然而，传统的标量核方法（如高斯核、Matérn 核）对每个分量独立施加先验，完全忽略了分量间的微分耦合关系。本文主张：必须将核函数本身推广为算子值（矩阵值），从而在 RKHS 的内禀结构中编码这些物理微分约束。"
+    },
+    {
+      "type": "p",
+      "text": "算子值再生核希尔伯特空间（operator-valued RKHS，简称 OV-RKHS）的概念由 Schwartz、Bauer 等人系统建立。其核心对象是矩阵值函数 $\\mathcal{K}: \\Omega \\times \\Omega \\to \\mathbb{R}^{d \\times d}$，满足正定性、再生性与对称性。区别于标量 RKHS 中 $\\langle f, g \\rangle_{\\mathcal{H}} = \\sum_i \\alpha_i \\beta_i K(x_i, y_i)$ 的简单结构，OV-RKHS 的内积由 $\\langle f, g \\rangle_{\\mathcal{H}} = \\sum_{i,j} \\langle f(x_i), \\mathcal{K}(x_i, x_j) g(x_j) \\rangle_{\\mathbb{R}^d}$ 定义，从而允许我们通过精心设计 $\\mathcal{K}$ 来编码矢量场分量间的耦合。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathcal{K}(x, y) = \\sum_{k=1}^\\infty \\lambda_k \\, \\phi_k(x) \\, \\phi_k(y)^\\top, \\quad \\mathcal{K}(\\cdot, y)\\,c \\in \\mathcal{H}, \\, \\langle f, \\mathcal{K}(\\cdot, y) c \\rangle_{\\mathcal{H}} = \\langle f(y), c \\rangle_{\\mathbb{R}^d} \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "OV-RKHS 的算子值 Mercer 分解 (1) 是其核心结构。基函数 $\\phi_k: \\Omega \\to \\mathbb{R}^d$ 不再是标量函数，而是向量值函数，因此其导数结构 $\\nabla \\cdot \\phi_k$、$\\nabla \\times \\phi_k$ 自然编码在 OV-RKHS 的函数空间定义中。本文的核心定理是：若 $\\mathcal{K}$ 的 Mercer 基函数全部满足 $\\nabla \\cdot \\phi_k = 0$（即选取无散向量场作为基），则 OV-RKHS 中的任何函数自动满足无散约束。这一性质使得 OV-RKHS 同时承担了\"逼近空间\"和\"物理约束流形\"的双重角色，是其在向量场逆问题中优于标量 RKHS 的根本原因。"
+    },
+    {
+      "type": "math",
+      "latex": "f^\\ast(x) = \\sum_{i=1}^N \\mathcal{K}(x, x_i)\\, \\alpha_i, \\quad \\alpha^\\ast = (\\mathcal{G} + \\lambda \\, I)^{-1} \\, y_\\delta, \\quad \\mathcal{G}_{ij} = \\mathcal{K}(x_i, x_j) \\in \\mathbb{R}^{d \\times d} \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "由表示定理 (2)，最小范数 OV-RKHS 插值解 $f^\\ast$ 必然位于由 $\\mathcal{K}(\\cdot, x_i) c_i$ 张成的有限维子空间中。其 Gram 矩阵 $\\mathcal{G} \\in \\mathbb{R}^{Nd \\times Nd}$ 是块矩阵，每一块 $\\mathcal{G}_{ij} = \\mathcal{K}(x_i, x_j) \\in \\mathbb{R}^{d \\times d}$ 编码了场点 $x_i$ 和 $x_j$ 之间所有分量对的耦合。这一结构与有限元方法中的\"向量基函数\"思想高度同构，但 OV-RKHS 提供了更灵活的逼近能力，因为基函数是从无穷维 OV-RKHS 中通过数据驱动的方式隐式选择的。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathcal{K}_{\\mathrm{divfree}}(x, y) = (I - \\nabla_x \\nabla_x^\\top \\Delta_x^{-1}) \\, K(|x-y|) \\, (I - \\nabla_y \\nabla_y^\\top \\Delta_y^{-1}) \\tag{3}",
+      "display": false
+    },
+    {
+      "type": "p",
+      "text": "在具体构造上，本文给出无散 OV-RKHS 核的一个显式公式 (3)，其中标量核 $K$ 选为 Matérn 族（如 $\\nu = 3/2$ 或 $5/2$），左右各乘以 Helmholtz-Hodge 投影算子 $(I - \\nabla \\nabla^\\top \\Delta^{-1})$。这一构造保证：对于任何 $c \\in \\mathbb{R}^d$ 和 $y \\in \\Omega$，$\\nabla_x \\cdot [\\mathcal{K}_{\\mathrm{divfree}}(x, y) c] = 0$ 恒成立。类似地，我们可以构造无旋核 $\\mathcal{K}_{\\mathrm{curlfree}}$，或推广至曲流形上的 Beltrami 分解。我们证明这些核的 Mercer 基函数恰好是 Beltrami 流或 Toroidal-Poloidal 分解的本征模态，与自然物理模态精确匹配。"
+    },
+    {
+      "type": "p",
+      "text": "本文的结论凝练为如下命题：算子值核函数 $\\mathcal{K}$ 不仅是一个数学构造，更是一类\"携带物理约束的函数空间定义器\"，其 Mercer 基函数等价于物理微分算子的本征模态。展望未来，我们将这一框架与谱理论及谱元素方法结合，构造出能够同时处理向量化、流形约束、含源项和异向异性扩散的广义 OV-RKHS，为多物理场耦合反问题（如电磁-弹性耦合、地震-电磁联合反演）提供一个统一的正则化数学基础。"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "id": "qpao-decoupled",
+  "title": "光声层析成像中量化双逆问题的解耦正则化策略",
+  "date": "2026-01-03",
+  "tags": [
+    "计算成像",
+    "光声成像",
+    "正则化"
+  ],
+  "abstract": "将声学初始压力（温和）与光学吸收（严重）双逆问题解耦，用局部方差传播引导光学平滑。",
+  "body": [
+    {
+      "type": "p",
+      "text": "定量光声成像(Quantitative Photoacoustic Tomography, QPAT)的核心任务是从边界超声时序数据 $p(x_{\\mathrm{s}}, t)$ 重建组织的光学吸收系数 $\\mu_a(x)$。该问题的数学结构包含两个串联子问题:第一步(声学反演)从 $p$ 重建初始声压 $p_0(x)$,由波动方程 $\\partial_t^2 p - c^2\\Delta p = 0$ 的时间反演控制,属温和不适定;第二步(光学反演)从 $p_0$ 反推 $\\mu_a$,由扩散方程 $-\\nabla\\cdot(\\kappa\\nabla\\Phi) + \\mu_a \\Phi = 0$ 的反演构成,属严重不适定。"
+    },
+    {
+      "type": "p",
+      "text": "传统串联方法将声学反演与光学反演作为两个独立模块实现,忽略了二者之间统计依赖性的传递:$\\mu_a$ 的小扰动会通过光通量 $\\Phi$ 引发 $p_0$ 反演的整体偏移,而 $p_0$ 的局部误差又会在光学反演中被指数放大。这种链式误差传播在乳腺、血管瘤等深度成像场景中导致显著的定量偏差。"
+    },
+    {
+      "type": "math",
+      "latex": "p_0^\\lambda = \\arg\\min_{p_0}\\,\\tfrac{1}{2}\\|\\mathcal{W} p_0 - p\\|^2 + \\lambda\\,\\mathrm{TV}(p_0), \\quad \\mathcal{W} = e^{T\\Delta}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "本文提出解耦正则化策略:第一步采用基于 TV 的声学反演,获得 $p_0^\\lambda$ 及其局部方差估计 $\\widehat{\\mathrm{Var}}[p_0^\\lambda(x)]$。后者基于线性化误差传播 $\\mathrm{Var}[p_0^\\lambda] \\approx \\sigma^2 \\mathcal{W}^{-1}(\\mathcal{W}\\mathcal{W}^\\ast)^{-1}\\mathcal{W}^{-\\ast}$ 显式计算,可作为第二步光学反演中加权 TV 正则化项的局部自适应权重。"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{\\mu_a\\ge 0}\\,\\tfrac{1}{2}\\|F(\\mu_a) - \\hat p_0\\|^2_{C_{\\hat p_0}^{-1}} + \\int \\lambda(x)\\,|\\nabla\\mu_a|\\,dx, \\quad \\lambda(x) = \\lambda_0\\bigl(1 + \\beta\\,\\widehat{\\mathrm{Var}}[\\hat p_0(x)]\\bigr)",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**命题**(方差传播闭式):在声学反演采用 Tikhonov 正则 $\\mathcal{W}^\\ast\\mathcal{W} + \\alpha I$ 的情形下,$p_0^\\lambda$ 的协方差可被精确表达为 $C_{p_0} = (\\mathcal{W}^\\ast\\mathcal{W} + \\alpha I)^{-1}\\mathcal{W}^\\ast \\sigma^2 I\\,\\mathcal{W}(\\mathcal{W}^\\ast\\mathcal{W} + \\alpha I)^{-1}$。对角元素 $\\widehat{\\mathrm{Var}}[p_0^\\lambda(x_i)]$ 即为加权 TV 空间自适应权重的物理基础。"
+    },
+    {
+      "type": "p",
+      "text": "**讨论**:这种“不确定性传播引导的自适应平滑”具有多重优良性质。首先,$\\lambda(x)$ 的高值区域(对应 $p_0$ 反演的高不确定性)恰为光学反演中“病态最强”的区域,正则化权重与不适定程度的自适应匹配可有效避免过度平滑或欠平滑。其次,该策略不引入额外的超参数,$\\beta$ 的全局校准可通过 Morozov 偏差原理或广义交叉验证统一确定。"
+    },
+    {
+      "type": "math",
+      "latex": "\\|\\hat\\mu_a - \\mu_a^\\dagger\\|_{L^2} \\le C_1 \\,\\mathrm{tr}\\bigl((\\mathcal{W}^\\ast\\mathcal{W} + \\alpha I)^{-1}\\bigr)^{1/2} + C_2\\,\\alpha^\\mu \\,\\|\\mu_a^\\dagger\\|_{\\mathrm{BV}^\\mu}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**结论与展望**:本文为 QPAT 提供了基于统计依赖性传播的解耦正则化范式,避免了双逆问题链式误差放大的根本性陷阱。该方法在乳腺肿瘤光声定量中显著提升边缘定位精度,并对深度方向的 $\\mu_a$ 估计偏差实现自适应校正。后续工作可向多光谱 QPAT 拓展,在 $N$ 个波长下联合估计氧合血红蛋白浓度 $c_{\\mathrm{HbO}}$ 与 $c_{\\mathrm{Hb}}$,实现对组织功能信息的完全量化重建。"
+    }
+  ]
+}

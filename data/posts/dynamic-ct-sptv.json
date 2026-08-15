@@ -1,0 +1,52 @@
+{
+  "id": "dynamic-ct-sptv",
+  "title": "动态 X 射线 CT 的时空全变分正则化：超越逐帧重建的谱方法",
+  "date": "2025-12-13",
+  "tags": [
+    "计算成像",
+    "动态CT",
+    "全变分"
+  ],
+  "abstract": "引入光流估计引导的时空 TV，将运动轨迹上的不连续惩罚降到最低。",
+  "body": [
+    {
+      "type": "p",
+      "text": "动态 X 射线 CT 旨在从稀疏角度的时序投影 $\\{y_t\\}_{t=1}^T$ 重建随时间演化的密度场 $u(x, t)$。其核心困境在于**逐帧极端欠采样**:为将辐射剂量控制在临床可接受水平,每帧投影数 $N_t$ 往往低于 Nyquist 极限,导致单帧反演高度不适定、充满条纹伪影。将所有帧视为独立反演必然遗失时间维度的强结构性信息。"
+    },
+    {
+      "type": "p",
+      "text": "时空全变分(Spatiotemporal TV)将 $u(x, t)$ 视为三维连续体,在空间与时间维度上同时施加导数惩罚。然而,直接耦合 $\\lambda_x\\,\\mathrm{TV}_x + \\lambda_t\\,\\mathrm{TV}_t$ 面临尺度不匹配:CT 空间分辨率典型为亚毫米,而时间分辨率要求毫秒级,简单各向同性耦合会过度平滑快速运动结构或欠平滑静止背景。"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{u}\\,\\sum_{t=1}^{T} \\tfrac{1}{2}\\|A_t u_t - y_t\\|^2 + \\alpha\\int_{\\Omega\\times[0,T]} |R\\,\\nabla_{(x,t)} u|\\,dx\\,dt",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "本文提出基于光流估计 $\\mathbf{v}(x, t)$ 的正则化张量 $R(x, t) \\in \\mathbb{R}^{1\\times(1+n)}$ 设计:沿运动轨迹 $R = (1, -\\mathbf{v})$ 不惩罚梯度,跨轨迹方向强惩罚。这一结构将欧拉框架下的时空各向异性 TV 等价地转化为拉格朗日坐标系下的纯空间 TV。"
+    },
+    {
+      "type": "math",
+      "latex": "|R\\,\\nabla_{(x,t)} u|^2 = \\Bigl|\\partial_t u + \\mathbf{v} \\cdot \\nabla_x u\\Bigr|^2 + \\lambda\\,\\|\\nabla_x u\\|^2_{P_\\perp(\\mathbf{v})}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**定理**(运动补偿的等价性):若 $\\mathbf{v}(x, t)$ 准确描述了 $u$ 的对流速度场,则上述变分模型的解 $\\hat u$ 满足在拉格朗日坐标 $\\xi = x - \\int_0^t \\mathbf{v}(x, s)\\,ds$ 下,$\\hat u(\\xi, t) = \\bar u(\\xi)$ 几乎为时间的常数函数,即问题退化为对 $\\bar u$ 的单次静态 TV 重建。该定理严格证明了运动补偿 SP-TV 不会“过度”平滑时间维度。"
+    },
+    {
+      "type": "p",
+      "text": "**讨论**:实际中 $\\mathbf{v}$ 未知,需通过变分光流法(coarse-to-fine Horn-Schunck 或 TV-L1)进行联合估计。光流估计误差 $\\delta\\mathbf{v}$ 引入的惩罚矩阵扰动可被一阶分析量化:"
+    },
+    {
+      "type": "math",
+      "latex": "\\|\\hat u - u^\\dagger\\|_{L^2} \\le C_1\\,\\sqrt{\\sum_t \\sigma_{\\min}^{-2}(A_t) \\,\\sigma^2} + C_2\\,|\\delta\\mathbf{v}|_{L^\\infty}\\,\\|u^\\dagger\\|_{\\mathrm{TV}}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**结论与展望**:本文提出的运动补偿时空 TV 范式为动态 CT 提供了一种超越逐帧重建的统一正则化框架,在心搏周期内冠脉快速变化的临床场景中显著提升时间分辨率。后续研究将向 4D 锥束 CT 与 C-arm 血管造影推广,并探索与深度神经网络的结合——以学习的位移场 $\\mathbf{v}_\\theta$ 替代传统光流,使运动补偿与重建在端到端框架下联合优化。"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "id": "meta-regularization",
+  "title": "逆问题的元正则化：学会怎样惩罚——向深度学习索要一种广义先验",
+  "date": "2024-07-20",
+  "tags": [
+    "不适定逆问题",
+    "元学习",
+    "元正则化"
+  ],
+  "abstract": "训练小网络输出自适应正则化梯度方向，近似逼近集成的 Bregman 近端算子，但需警惕正则化幻觉。",
+  "body": [
+    {
+      "type": "p",
+      "text": "经典正则化理论将不适定逆问题 $\\min_x \\tfrac{1}{2}\\|Ax-y\\|^2 + \\alpha R(x)$ 的稳定性寄托于人为设计的罚项 $R(\\cdot)$，如 Tikhonov、TV、$\\ell_1$ 等。然而面对复杂分布的解空间，固定 $R$ 往往顾此失彼：它要么过强、抹平真实细节，要么过弱、不足以滤除噪声。本文提出\"元正则化 (meta-regularization)\"概念：不直接设计 $R$，而是训练一个小型网络 $G_\\phi:\\mathcal{H}\\times\\mathcal{H}\\to\\mathcal{H}$，输入当前迭代解 $x^k$ 与残差 $r^k=Ax^k-y$，输出自适应的正则化梯度方向"
+    },
+    {
+      "type": "math",
+      "latex": "x^{k+1}=x^k - \\eta\\,\\big(\\nabla_x \\tfrac{1}{2}\\|Ax-y\\|_2^2 + G_\\phi(x^k, r^k)\\big),\\quad G_\\phi\\in\\mathcal{H}. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "训练 $G_\\phi$ 的元目标是在大量相似逆问题 (随机算子 $A_\\tau$ 与真解 $x^\\dagger_\\tau$) 上的平均重建性能"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_\\phi\\ \\mathbb{E}_{\\tau}\\Big[\\tfrac{1}{2}\\|x^\\dagger_\\tau - x^{K}_\\phi(A_\\tau, y_\\tau)\\|_2^2\\Big] + \\lambda\\,\\mathrm{Reg}_\\mathrm{physics}(\\phi), \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathrm{Reg}_\\mathrm{physics}(\\phi)$ 编码物理一致性 (例如对称性、能量守恒)，$\\tau$ 是任务分布。该元学习问题的二阶导通过隐函数定理 (implicit function theorem) 计算，是经典 MAML 在无限维 Hilbert 空间中的推广。"
+    },
+    {
+      "type": "p",
+      "text": "定义 1 (集成 Bregman 近端算子). 称 $G_\\phi$ 为集成 Bregman 近端算子，如果存在一族凸函数 $\\{R_\\xi\\}$ 及其 Bregman 距离 $D_{R_\\xi}(x,x^k)$，使得"
+    },
+    {
+      "type": "math",
+      "latex": "G_\\phi(x^k, r^k)=\\int \\nabla_x D_{R_\\xi}(x^k, x^\\dagger_\\xi)\\,d\\mu(\\xi\\,|\\,x^k, r^k), \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mu$ 是以 $(x^k, r^k)$ 为充分统计量的后验分布。该定义表明，元正则化等价于在数据驱动的后验基础上对一族手工先验做隐式平均，从而具备比任何固定 $R$ 更强的表达力。"
+    },
+    {
+      "type": "p",
+      "text": "定理 1 (近似近端性质). 设 $G_\\phi$ 在 $\\mathcal{H}$ 的紧子集 $K$ 上 $L_\\phi$-Lipschitz 连续，且对每个 $\\xi$ 都有 $\\nabla^2 R_\\xi\\succeq \\mu_0 I$。则对任意 $x^k\\in K$ 与步长 $\\eta<2/\\mu_0$，存在正常数 $C$ 使"
+    },
+    {
+      "type": "math",
+      "latex": "\\|G_\\phi(x^k, r^k)-\\nabla R_{\\mathrm{ens}}(x^k)\\|_{\\mathcal{H}}\\le C\\,\\sqrt{\\mathbb{E}_\\xi[\\|x^\\dagger_\\xi-x^k\\|_{\\mathcal{H}}^2]},\\quad R_{\\mathrm{ens}}:=R_{\\mathrm{avg}}+\\beta\\,\\mathrm{Var}(R_\\xi), \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $R_{\\mathrm{avg}}=\\mathbb{E}_\\xi R_\\xi$，$R_{\\mathrm{ens}}$ 是集成后的有效正则化。该定理为元正则化提供了坚实的收敛性保证：当 $x^k$ 充分接近任务分布中的真解时，$G_\\phi$ 的输出渐近等价于一个凸先验的次梯度，从而保留近端类算法 (FISTA、ADMM) 的全局收敛性。"
+    },
+    {
+      "type": "p",
+      "text": "然而在分布外 (out-of-distribution, OOD) 数据下，$G_\\phi$ 可能产生\"正则化幻觉 (regularization hallucination)\"：网络输出去相关于真解的方向，造成过平滑或人为结构。为抑制此风险，我们提出\"分布鲁棒 + 物理一致性\"双保险"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_\\phi\\ \\max_{q:\\mathcal{W}(q,\\hat p)\\le \\rho}\\ \\mathbb{E}_{q}\\Big[\\tfrac{1}{2}\\|x^\\dagger_\\tau - x^{K}_\\phi\\|_2^2\\Big] + \\lambda\\,\\mathrm{Reg}_\\mathrm{physics}(\\phi), \\tag{5}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathcal{W}$ 是 Wasserstein 距离，$\\rho$ 是 Wasserstein 球的半径，$\\mathrm{Reg}_\\mathrm{physics}$ 强制 $G_\\phi$ 的输出满足物理守恒律。该极小极大训练显著提升 OOD 鲁棒性，且理论保证在最坏分布下 $\\phi$ 的损失有界。"
+    },
+    {
+      "type": "p",
+      "text": "作为本文系列的收尾与展望，我们认为元正则化代表了一类全新的研究范式——从\"设计先验\"转向\"学习先验的结构\"。在监督信息丰富的应用 (CT 重建、MRI 去噪、计算摄影) 中元正则化已展示出对 TV/DL 混合方法的显著优势，而在监督稀缺的反问题 (EIT、相位恢复) 中仍需结合物理一致性约束与可解释性分析。未来的关键问题包括：如何将 PDE 守恒律、几何对称性显式编码到 $\\phi$ 的归纳偏置中，以及如何量化元正则化对解的可信度 (uncertainty quantification)。"
+    }
+  ]
+}

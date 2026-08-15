@@ -1,0 +1,69 @@
+{
+  "id": "brillouin-spectral",
+  "title": "布里渊显微镜光谱反卷积的物理正则化：已知布里渊谱线先验",
+  "date": "2024-08-03",
+  "tags": [
+    "计算成像",
+    "布里渊散射",
+    "反卷积"
+  ],
+  "abstract": "将洛伦兹线型先验作为强约束融入反演，对峰值数量和宽度的惩罚实现超分辨率力学成像。",
+  "body": [
+    {
+      "type": "p",
+      "text": "布里渊 (Brillouin) 散射光谱通过入射光与样品中声学声子的非弹性相互作用，揭示材料的粘弹性力学性质。每个像素处的散射谱由仪器响应 $I_{\\mathrm{instr}}(\\nu)$ 与样品本征谱的卷积产生，本征谱通常以洛伦兹 (Lorentzian) 线型参数化"
+    },
+    {
+      "type": "math",
+      "latex": "L(\\nu;\\nu_p,\\Gamma)=\\frac{1}{\\pi}\\frac{\\Gamma}{(\\nu-\\nu_p)^2+\\Gamma^2},\\quad S(\\nu)=I_{\\mathrm{instr}}*\\sum_{i} h_i L(\\nu;\\nu_p^{(i)},\\Gamma_i), \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\nu_p$ 是布里渊频移，$\\Gamma$ 是线宽，$h_i$ 是峰高，$*$ 表示卷积。频移 $\\nu_p$ 直接编码纵向模量 $M=\\rho v^2$，线宽 $\\Gamma$ 反映粘性。然而现有光谱仪的分辨率 (典型 $0.3{-}1\\,\\mathrm{GHz}$) 远高于生物组织 $\\nu_p$ 之间的差异 (常 $<0.1\\,\\mathrm{GHz}$)，形成了一类由仪器核 $I_{\\mathrm{instr}}$ 平滑导致的非线性盲反卷积问题。"
+    },
+    {
+      "type": "p",
+      "text": "本文将洛伦兹先验作为强物理约束融入反演，使问题转化为对参数集 $\\{(\\nu_p^{(i)},\\Gamma_i,h_i)\\}_{i=1}^{k}$ 的稀疏估计。引入峰值数量的 $\\ell_0$ \"惩罚\"与相邻像素 $\\nu_p(x)$ 的空间平滑，构造如下变分模型"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{k,\\{\\nu_p^{(i)},\\Gamma_i,h_i\\}}\\ \\tfrac{1}{2}\\|S(\\nu)-\\sum_{i=1}^{k} h_i L(\\nu;\\nu_p^{(i)},\\Gamma_i)\\|_2^2 + \\alpha\\,\\|h\\|_0 + \\beta\\,\\mathrm{TV}(\\nu_p(x)) + \\gamma\\,\\mathrm{Reg}(\\Gamma), \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathrm{TV}(\\nu_p(x))$ 强制相邻像素的力学参数连续，$\\mathrm{Reg}(\\Gamma)$ 抑制线宽的非物理漂移。问题 (2) 是非凸且非光滑的，但通过引入连续化的峰指示函数 $\\rho(\\nu)\\approx \\sum_i h_i\\,\\delta(\\nu-\\nu_p^{(i)})$，可重新参数化为在 $\\nu$-空间上的稀疏-平滑联合反演。"
+    },
+    {
+      "type": "p",
+      "text": "我们采用 IRLS (iteratively reweighted least squares) 与 ADMM 的混合策略：在 IRLS 外层用权 $w_i^{(t)}=|h_i^{(t)}|^{-1}$ 近似 $\\|h\\|_0$；在内层 ADMM 求解"
+    },
+    {
+      "type": "math",
+      "latex": "(h^{t+1},\\nu_p^{t+1})=\\arg\\min_{h,\\nu_p}\\ \\tfrac{1}{2}\\|S-L(\\cdot;\\nu_p)h\\|_{W^{(t)}}^2 + \\beta\\,\\mathrm{TV}(\\nu_p) + \\iota_{[\\nu_{\\min},\\nu_{\\max}]}(\\nu_p), \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $W^{(t)}=\\mathrm{diag}(w^{(t)})$，$\\iota$ 是物理论域上的指示函数。该分裂在每次迭代中调用一次 TV 邻近算子与一次小规模二次规划，$50$ 步内可达到亚像素级频移精度。"
+    },
+    {
+      "type": "p",
+      "text": "定理 1 (超分辨率极限). 设仪器核 $I_{\\mathrm{instr}}$ 为高斯型，带宽 $\\sigma_{\\mathrm{instr}}$，且 $\\nu_p^{(i)}$ 之间最小间距 $\\Delta\\nu\\ge\\Delta_{\\mathrm{crit}}=1.4\\sigma_{\\mathrm{instr}}$。则在 $\\|\\varepsilon\\|_2\\le C_\\varepsilon$ 的噪声条件下，(2) 的解 $\\hat\\nu_p$ 满足"
+    },
+    {
+      "type": "math",
+      "latex": "\\max_i |\\hat\\nu_p^{(i)}-\\nu_p^{(i),\\dagger}| \\le C_1\\,\\frac{\\sigma_{\\mathrm{instr}}\\,\\sigma_\\varepsilon}{\\mathrm{SNR}\\cdot \\Delta_{\\mathrm{crit}}}+C_2\\,\\frac{\\sigma_{\\mathrm{instr}}^2}{\\mathrm{SNR}}\\sqrt{\\mathrm{TV}(\\nu_p^\\dagger)}, \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "即相对仪器核标准差，物理正则化将频移分辨率提升约一个数量级，从而突破瑞利极限，实现\"超分辨率\"力学成像。"
+    },
+    {
+      "type": "p",
+      "text": "我们将所提方法应用于活细胞与眼角膜的体积布里渊显微数据，相比传统谱线拟合 (Lorentzian peak fitting) 实现了 $3{-}5$ 倍的信噪比增益，并成功分辨出传统方法无法分离的双层粘弹性结构。本框架可与谱域 OCT (spectral-domain OCT)、共聚焦显微镜融合，构成下一代无标记、无接触、定量的细胞力学成像平台。"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "lensless-holography",
+  "title": "无透镜片上显微术的正则化：从孪生像到像素超分辨的一体化解",
+  "date": "2025-09-06",
+  "tags": [
+    "计算成像",
+    "无透镜",
+    "相位恢复"
+  ],
+  "abstract": "将孪生像消除与亚像素超分辨统一为非凸逆问题，通过微移传感器捕获多帧使问题变为可联合求解。",
+  "body": [
+    {
+      "type": "p",
+      "text": "无透镜同轴全息显微术 (Lensless In-line Holographic Microscopy, LIHM) 通过在紧邻样本的传感器上记录衍射强度图 $y \\in \\mathbb{R}^{M\\times N}$，提供一种大视场、低成本、可片上集成的细胞学成像方案。其物理前向模型可由菲涅尔传播算子与传感器像素的卷积核 $D$ 复合而成：$y = D \\cdot (z + z^*) + \\varepsilon$，其中 $z \\in \\mathbb{C}^{M\\times N}$ 是待求复振幅。该模型同时内蕴两个长期被视为独立子问题的病态任务：孪生像 (twin-image) 消除与亚像素超分辨。前者源自仅观测 $|\\mathcal{F}\\{z+z^*\\}|^2$ 后丢失的相位共轭对称性，后者源自奈奎斯特采样与衍射极限间的频谱缺口。"
+    },
+    {
+      "type": "p",
+      "text": "本文将二者统一为一个非凸复合逆问题，并证明：通过在传感器平面上以亚像素精度做可控的横向微移 $\\delta_k \\in \\mathbb{R}^2$，$k=1,\\dots,K$，可以同时打破孪生像的零空间和补足超分辨所需的频谱样本。形式上，我们求解"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{z,\\,\\{\\delta_k\\}}\\;\\sum_{k=1}^K \\|T_{\\delta_k}(z) - y_k\\|_2^2 + \\alpha\\,\\|\\nabla z\\|_{1} + \\beta\\,\\|\\nabla^2 z\\|_{1}, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $T_{\\delta_k}$ 表示频域的相位斜坡调制 $\\exp(i 2\\pi (\\xi\\cdot\\delta_k))$，等价于空域的平移子像素核。式 (1) 的 Lagrangian 形式可改写为对偶鞍点问题，从而适用原始-对偶 (Primal-Dual) 框架。"
+    },
+    {
+      "type": "p",
+      "text": "为分析可解性，我们考察前向算子 $A: z \\mapsto \\{T_{\\delta_k}(z)\\}_{k=1}^K$ 的奇异值系统。当 $K\\ge 2$ 且 $\\{\\delta_k\\}$ 满足去相关条件 $\\|\\delta_k - \\delta_{k\\prime}\\| \\ge d_{\\mathrm{pixel}}/2$ 时，可以证明 $A^\\ast A$ 的零空间维度由 1（单孪生像）降至 0。"
+    },
+    {
+      "type": "math",
+      "latex": "\\sigma_{\\min}(A^\\ast A) \\ge C(\\alpha_\\delta)\\,\\sigma_{\\min}(D) > 0, \\quad \\alpha_\\delta := \\min_{k\\neq k\\prime} \\|\\delta_k - \\delta_{k\\prime}\\|, \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "命题 1 (多帧条件良态化): 满足式 (2) 的最小像素间距 $\\alpha_\\delta$ 阈值是孪生像被唯一分解的充分条件，且 $A$ 的最小奇异值 $\\sigma_{\\min}$ 随 $\\alpha_\\delta$ 单调递增。这意味着只需 $K=2$ 或 $3$ 帧的微移即可将双目标模糊问题转化为良态的相位检索与超分辨联合反演。"
+    },
+    {
+      "type": "p",
+      "text": "对算法实现，我们采用 Chambolle-Pock 原始-对偶分裂以处理式 (1) 中的非光滑罚项。令 $p \\in \\mathbb{C}^{M\\times N}$ 为对偶变量，则鞍点条件等价于"
+    },
+    {
+      "type": "math",
+      "latex": "0 \\in A^\\ast(A z - y) + \\alpha\\,\\partial\\|\\nabla z\\|_1 + \\beta\\,\\partial\\|\\nabla^2 z\\|_1, \\quad z^{k+1} = \\mathrm{prox}_{\\tau F}(z^k - \\sigma A^\\ast p^k). \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "由于 $\\mathrm{prox}_{\\tau F}$ 在 $\\mathbb{C}$ 上具有显式解（软阈值），整个迭代可避免矩阵求逆，仅需 $K$ 次 FFT 与 $K$ 次 IFFT。计算复杂度为 $\\mathcal{O}(K MN \\log(MN))$，与单帧传统方法同阶。讨论: 与传统两阶段流程（先消除孪生像再做超分辨）相比，联合式 (1) 的优势在于：(i) 孪生像与高频细节通过同一稀疏先验耦合，避免误差级联放大；(ii) 微移参数 $\\{\\delta_k\\}$ 与像差图可同步估计，引入额外的运动场正则化自由度；(iii) $\\beta$ 的引入使连续相位的二阶导数受到稀疏约束，抑制了一阶 TV 固有的卡通化伪影。本文从紧算子谱论角度证明：微移无透镜全息术的内禀可解性由 $\\{\\delta_k\\}$ 生成的相位斜坡族频谱覆盖度决定。我们的统一变分框架将孪生像消除与超分辨统一为同一良态的非凸优化问题，规避了传统分阶段方法所引入的级联偏差。该思路可推广至多模态无透镜成像（荧光 + 全息）与深度学习先验 (Deep Image Prior) 的混合正则化场景。"
+    }
+  ]
+}

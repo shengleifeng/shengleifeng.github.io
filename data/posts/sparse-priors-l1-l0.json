@@ -1,0 +1,57 @@
+{
+  "id": "sparse-priors-l1-l0",
+  "title": "稀疏先验的较量：ℓ₁ 罚项的对偶支撑恢复为何强于 ℓ₀ 贪心",
+  "date": "2026-05-02",
+  "tags": [
+    "正则化理论",
+    "压缩感知",
+    "稀疏先验"
+  ],
+  "abstract": "从支撑恢复一致性角度分析 ℓ₁ 与 OMP 的本质差异，揭示凸优化的结构性胜利。",
+  "body": [
+    {
+      "type": "p",
+      "text": "在压缩感知（Compressed Sensing）理论中，$\\ell_1$ 凸松弛能以高概率精确恢复 $K$-稀疏信号已被广泛认可（Donoho-Tanner相变、Foucart-Rauhut的RIP理论）。然而若将焦点从\"信号重建误差\"转移到\"支撑恢复一致性\"（support recovery consistency），即辨识哪些坐标是非零，则 $\\ell_1$ 与贪心算法（如OMP、CoSaMP）之间的差异远比表面看起来更深刻。本文将从凸优化的对偶理论出发，揭示 $\\ell_1$ 在支撑恢复上的结构性优势。"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{z\\in\\mathbb{R}^n}\\,\\|z\\|_1 \\quad \\mathrm{s.t.}\\quad Az = y, \\quad y = Ax^{\\dagger}, \\quad \\|x^{\\dagger}\\|_0 = K. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "原因可从对偶理论精确刻画。$\\ell_1$ 问题的KKT条件要求存在对偶证书 $\\nu \\in \\mathcal{R}(A^{\\top})$ 满足 $A^{\\top}\\nu \\in \\partial\\|x^{\\dagger}\\|_1$ 且支撑集 $\\mathrm{supp}(x^{\\dagger})$ 外的对偶证书分量严格饱和：$|\\langle A^{\\top}\\nu, v_j \\rangle| < 1$ 对 $j \\notin \\mathrm{supp}(x^{\\dagger})$。这一精确的代数条件是支撑恢复的充要条件。"
+    },
+    {
+      "type": "math",
+      "latex": "A^{\\top}\\nu \\in \\partial\\|x^{\\dagger}\\|_1 \\iff \\begin{cases} (A^{\\top}\\nu)_j = \\mathrm{sign}(x^{\\dagger}_j), & j \\in \\mathrm{supp}(x^{\\dagger}) \\\\ |(A^{\\top}\\nu)_j| < 1, & j \\notin \\mathrm{supp}(x^{\\dagger}) \\end{cases} \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "当字典相干性 $\\mu = \\max_{i \\neq j} |\\langle a_i, a_j \\rangle|$ 满足 $\\mu < 1/(2K-1)$ 时，该对偶证书唯一存在，支撑集被\"锁定\"。这一条件的最优性已被Tropp在2004年的奠基性工作中严格证明，是当前支撑恢复理论中不可逾越的尖锐阈值。相反，OMP等贪心算法没有类似的对偶证书机制，其每一步基于残差与字典原子的最大内积选取支撑，缺乏全局一致性约束。"
+    },
+    {
+      "type": "p",
+      "text": "贪心算法的失败模式可清晰刻画为\"传播性错误\"。一旦在早期迭代中选错了一个原子（高相干环境下极易发生），后续迭代将持续地与该错误原子产生强耦合内积，导致更多错误原子的引入。这种正反馈机制使得OMP的支撑恢复错误数随迭代步骤呈近似线性增长，最终可能产生不可挽回的支撑集偏离。即使采用CoSaMP或IHT的批量选择策略，也无法根本消除这一错误传播，因为它们本质上都是局部贪心的，缺乏对偶证书的全局一致性检查。"
+    },
+    {
+      "type": "math",
+      "latex": "\\Pr[\\mathrm{supp}(\\hat{x}_{\\mathrm{OMP}}) \\neq \\mathrm{supp}(x^{\\dagger})] \\to 1 \\quad \\text{as} \\quad n/K \\to \\infty,\\; \\mu \\to 1/(K-1). \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "更为根本的是，$\\ell_1$ 在KKT条件下提供了精确的支撑恢复特征。Fuchs在2005年的工作以及随后Jin、Wang等人的扩展证明：在严格互补性条件下，$\\ell_1$ 解的支撑集以高概率等于真实支撑集。这一特征在统计学上对应于所谓的\"oracle property\"：当真实支撑已知时，$\\ell_1$ 解的渐近分布等价于在已知支撑上做普通最小二乘估计。这一双重身份——既能恢复支撑，又能在支撑已知时达到oracle效率——是凸优化在稀疏反问题中结构性胜利的核心。"
+    },
+    {
+      "type": "math",
+      "latex": "\\sqrt{n}\\,(\\hat{x}^{\\mathrm{LASSO}}_{\\mathrm{supp}} - x^{\\dagger}_{\\mathrm{supp}}) \\xrightarrow{d} \\mathcal{N}(0, \\sigma^2 (A_{\\mathrm{supp}}^{\\top}A_{\\mathrm{supp}})^{-1}). \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "这一分析在实践中的指导意义是显著的：在压缩感知、稀疏字典学习、基因表达分析等高维稀疏反问题中，应优先采用 $\\ell_1$ 类凸方法（LASSO、ADMM、FISTA），其支撑恢复一致性在理论与实践上均经受了严格检验。贪心算法仅在对计算速度有极端要求、或相干性极低（$\\mu < 1/(10K)$）的场景下才具有优势。我们认为，$\\ell_1$ 对偶证书的存在性是其能够在高维、强相干环境中仍能精确恢复支撑的根本原因，这是凸优化在不适定逆问题中最具代表性的结构性胜利之一。"
+    }
+  ]
+}

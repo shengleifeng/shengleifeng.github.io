@@ -1,0 +1,56 @@
+{
+  "id": "iht-bifurcation",
+  "title": "迭代硬阈值算法（IHT）为何在不适定下容易分叉：动力学系统视角",
+  "date": "2025-07-12",
+  "tags": [
+    "迭代正则化",
+    "稀疏",
+    "IHT"
+  ],
+  "abstract": "通过对不动点的线性稳定性分析，发现高度不适定测量下雅可比特征值模大于 1 导致解分叉。",
+  "body": [
+    {
+      "type": "p",
+      "text": "迭代硬阈值算法 (Iterative Hard Thresholding, IHT) 及其加速变体 (HTP, ADHT) 是求解 $\\ell_0$-约束稀疏反问题 $\\min_x \\|A x - y\\|^2$ s.t. $\\|x\\|_0 \\le K$ 的主流方法之一。在良态测量下，IHT 表现出线性收敛与稳定的支撑恢复。然而在高度不适定的测量场景（$A$ 的条件数 $\\kappa(A) \\gg 1$、或 $A$ 的 RIP 常数 $\\delta_{2K}$ 接近 1）下，IHT 经常出现剧烈的迭代振铃、支撑震荡乃至发散。本文从离散动力系统视角分析这一现象，揭示其分叉 (bifurcation) 本质并提出硬约束的稳定性设计。"
+    },
+    {
+      "type": "p",
+      "text": "IHT 的迭代可写为非线性映射 $F_K: x \\mapsto H_K(x + A^\\ast(y - A x))$，其中 $H_K$ 保留最大 $K$ 项的硬阈值算子。该映射在真实支撑 $S^\\dagger = \\mathrm{supp}(x^\\dagger)$ 处的不动点 $x^\\dagger$ 满足 $F_K(x^\\dagger) = x^\\dagger$。对 $F_K$ 在 $x^\\dagger$ 处做线性化，其雅可比矩阵 $DF_K(x^\\dagger)$ 决定了 IHT 的局部动力学行为。"
+    },
+    {
+      "type": "math",
+      "latex": "DF_K(x^\\dagger)|_S = I - A_S^\\ast A_S + A_S^\\ast A_{S^c}\\,\\mathrm{diag}(\\mathbf{1}_{|x^\\dagger_{S^c}| > |x^\\dagger_S^{(K)}|})\\,\\rho_S, \\quad \\rho(S) := \\rho(A_S^+ A_{S^c}). \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (1) 中 $A_S$、$A_{S^c}$ 为 $A$ 在真实支撑 $S^\\dagger$ 及其补集上的限制。雅可比矩阵 $DF_K$ 在支撑 $S$ 上的特征值 $\\lambda_i$ 满足 $|\\lambda_i| \\le \\rho(A_S^+ A_{S^c})$。命题 1 (分叉准则): 当 $A_S^+ A_{S^c}$ 的算子范数（也称互相干系数）满足"
+    },
+    {
+      "type": "math",
+      "latex": "\\rho(A_S^+ A_{S^c}) > \\tfrac{1}{2} \\quad \\Rightarrow \\quad |\\lambda_i| > 1, \\quad \\exists i, \\quad \\Rightarrow \\quad \\text{倍周期分叉}. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (2) 给出了 IHT 在不动点 $x^\\dagger$ 处发生倍周期分叉的严格判据：当测量矩阵的非支撑列与支撑列的互相干超过 $1/2$ 时，IHT 的雅可比特征值模超过 1，迭代序列将围绕 $x^\\dagger$ 出现幅度放大的振荡，并最终进入混沌。物理上，这对应于 RIP 常数 $\\delta_{2K}$ 接近 1 的极端不适定场景。"
+    },
+    {
+      "type": "math",
+      "latex": "\\delta_{2K}(A) := \\max_{|S| \\le 2K} \\|A_S^\\ast A_S - I\\|_2 \\to 1 \\quad \\Leftrightarrow \\quad \\rho(A_S^+ A_{S^c}) \\to \\tfrac{1}{\\sqrt{2}}. \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (3) 揭示了 RIP 常数与互相干系数之间的等价关系：当 $\\delta_{2K} \\to 1$ 时，互相干系数趋向 $1/\\sqrt{2}$，这恰好是分叉准则 (2) 的边界。推论 (收缩因子的稳定域): 当引入收缩因子 $\\eta \\in (0, 2/\\|A\\|^2)$ 时，IHT 的雅可比变为 $I - \\eta A_S^\\ast A_S + \\eta A_S^\\ast A_{S^c}\\,\\rho_S$，其谱半径 $\\rho_\\eta$ 满足 $\\rho_\\eta \\le 1 - \\eta\\,\\sigma_{\\min}^2(A_S) + \\eta\\,\\rho(A_S^+ A_{S^c})$。"
+    },
+    {
+      "type": "p",
+      "text": "由此导出稳定域条件: $\\eta < \\frac{2\\,\\sigma_{\\min}^2(A_S)}{\\sigma_{\\min}^2(A_S) + \\rho(A_S^+ A_{S^c})}$，该 $\\eta$ 即是硬约束的阈值设计参数。讨论: 与传统 IHT 收敛性证明 (Blumensath, 2012) 假设 $\\delta_{2K} < 1/\\sqrt{2}$ 相比，本文的分叉分析适用于 $\\delta_{2K} \\to 1$ 的极端不适定场景，揭示了\"算法在小噪声下尚稳定、噪声略增时突然发散\"的相变行为。该分析为设计混合 IHT (Hard-Soft Thresholding)、Newton-IHT 与半隐式 IHT 提供了谱依据。"
+    },
+    {
+      "type": "p",
+      "text": "在算法层面，我们提出基于局部支撑探测的稳定化 IHT：当检测到 $x^k$ 的支撑 $\\mathrm{supp}(x^k)$ 在连续 $T$ 步内震荡超过 $T_0$ 次时，自动回退到 $T$ 步前的解并减小 $\\eta$。该回退机制等价于在分叉边界附近做粘性阻尼，将混沌区\"折叠\"为稳定区。结论: IHT 在不适定下的分叉本质由支撑-非支撑列的互相干 $\\rho(A_S^+ A_{S^c})$ 严格控制，其稳定域可由收缩因子 $\\eta$ 的下界硬性约束。该分析为高维稀疏反问题中的算法设计提供了一套基于动力系统稳定性的诊断工具。"
+    }
+  ]
+}

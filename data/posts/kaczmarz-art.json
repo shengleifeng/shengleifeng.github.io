@@ -1,0 +1,57 @@
+{
+  "id": "kaczmarz-art",
+  "title": "代数重建术的迭代正则化视角：Kaczmarz 方法的半收敛秘密",
+  "date": "2026-04-25",
+  "tags": [
+    "迭代正则化",
+    "计算成像",
+    "Kaczmarz"
+  ],
+  "abstract": "从谱滤波与半收敛角度重新审视 Kaczmarz 方法，揭示其与 Tikhonov 的内在联系。",
+  "body": [
+    {
+      "type": "p",
+      "text": "代数重建术（Algebraic Reconstruction Technique, ART），即Kaczmarz方法，由Stefan Kaczmarz于1937年提出，在稀疏角CT、电子断层成像等场景中应用已久。其形式简洁优雅：给定方程组 $\\langle a_i, x \\rangle = b_i$，$i=1,\\ldots,m$，每一步将当前估计 $x^k$ 沿第 $i_k$ 条射线的超平面 $H_i = \\{x : \\langle a_i, x \\rangle = b_i\\}$ 做斜投影。Kaczmarz方法在适定情形下具有几何级数的收敛率，但在不适定问题中却展现出与Landweber迭代惊人相似的\"半收敛\"现象。本文将系统阐述其作为迭代正则化方法的数学本质。"
+    },
+    {
+      "type": "math",
+      "latex": "x^{k+1} = x^k + \\frac{b_{i_k} - \\langle a_{i_k}, x^k \\rangle}{\\|a_{i_k}\\|^2}\\,a_{i_k}, \\quad i_k \\sim \\mathrm{Uniform}(\\{1,\\ldots,m\\}). \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "若将 $A \\in \\mathbb{R}^{m \\times n}$ 的行记为 $a_i^{\\top}$，则随机化Kaczmarz（RK）方法可等价改写为"
+    },
+    {
+      "type": "math",
+      "latex": "x^{k+1} = (I - \\tau_k\\,a_{i_k}a_{i_k}^{\\top})\\,x^k + \\tau_k\\,b_{i_k}\\,a_{i_k}, \\quad \\tau_k = \\frac{1}{\\|a_{i_k}\\|^2}. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "这一递推式的随机矩阵乘积 $P_k = \\prod_{j=1}^{k}(I - \\tau_j a_{i_j}a_{i_j}^{\\top})$ 在期望意义下收敛到 $A$ 的伪逆的Strohlein-Haddock分析框架下，其期望谱滤波器 $F_k(\\sigma)$ 类似于Landweber的二项式滤波器"
+    },
+    {
+      "type": "math",
+      "latex": "F_k(\\sigma) = 1 - \\left(1 - \\tfrac{\\sigma^2}{\\|A\\|_F^2}\\right)^k, \\quad \\sigma \\in \\sigma(A). \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "从谱理论视角，随机化Kaczmarz的停止时刻 $k^{\\star}$ 的倒数扮演着类似Tikhonov正则化参数 $\\alpha$ 的角色。这一等价性可通过期望更新算子的谱分解严格建立：$F_k$ 在 $\\sigma = \\mathcal{O}(\\|A\\|_F\\,k^{-1/2})$ 处从近零过渡到近一，过渡宽度对应着隐式正则化的有效带宽。"
+    },
+    {
+      "type": "math",
+      "latex": "k^{\\star} \\sim \\frac{\\sigma_{\\min}^2(A)}{\\delta^2}\\,\\|x^{\\dagger}\\|^2, \\quad \\delta = \\|y - Ax^{\\dagger}\\|. \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "更精细地分析半收敛曲线：Strohlein与Haddock的工作表明，对高度病态系统，Kaczmarz方法的残差下降与误差上升之间存在一段\"甜蜜区间\"，其宽度对噪声水平 $\\delta$ 极为敏感。在极稀疏角CT中，$A$ 的最小奇异值 $\\sigma_{\\min} \\to 0$ 极快，$k^{\\star}$ 的不确定性可达一个数量级，停止准则的微小偏差就会导致显著的解退化。这与Landweber的半收敛行为在数学结构上完全同构。"
+    },
+    {
+      "type": "p",
+      "text": "实践中，对极稀疏角CT，半收敛曲线往往非常陡峭，停止准则的微小偏差就会导致显著的解退化。我们建议结合以下策略：(1) 采用交叉验证（如leave-one-out）作为 $\\delta$ 的稳健估计；(2) 使用带有阻尼因子的松弛Kaczmarz $x^{k+1} = x^k + \\lambda_k (b_{i_k} - \\langle a_{i_k}, x^k \\rangle)/\\|a_{i_k}\\|^2 \\cdot a_{i_k}$，$\\lambda_k \\in (0, 2)$，以调控谱滤波器的有效带宽；(3) 在迭代后期切换到SIRT（同时迭代重建技术）以避免单条射线的几何依赖性。这些改进使得Kaczmarz方法在现代低剂量CT、稀疏角断层成像中仍保持其重要地位。"
+    }
+  ]
+}

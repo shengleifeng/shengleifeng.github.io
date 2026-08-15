@@ -1,0 +1,22 @@
+{
+  "profile": {
+    "name": "冯圣磊",
+    "enName": "Shenglei Feng",
+    "title": "Research Interests: Computational Imaging, Inverse Problems, and Sparse Representation",
+    "affiliation": "Freelance researcher",
+    "email": "fengshenglei001@163.com",
+    "github": "https://github.com/shenglei-feng",
+    "scholar": "https://scholar.google.com/citations?user=shengleifeng",
+    "cv": "#",
+    "bio": "我是冯圣磊（Shenglei Feng），主要从事计算成像、反问题与稀疏表示相关的研究工作，具体关注反问题的良态化建模和计算成像中高效的数值反演算法。本站点整理了我的研究笔记与项目进展。",
+    "researchIntro": "我相信严格的数学结构与高效的数值算法是求解复杂成像与反问题的关键，也是连接理论与实际成像系统的桥梁。"
+  },
+  "navItems": [
+    { "id": "home", "label": "Home", "path": "/" },
+    { "id": "research", "label": "Research", "path": "/research" },
+    { "id": "publications", "label": "Publications", "path": "/publications" },
+    { "id": "blog", "label": "Blog", "path": "/blog" },
+    { "id": "projects", "label": "Projects", "path": "/projects" },
+    { "id": "contact", "label": "Contact", "path": "/contact" }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "id": "deq-implicit",
+  "title": "深度平衡模型作为隐式逆问题求解器：不动点迭代蕴含的正则化性质",
+  "date": "2025-05-24",
+  "tags": [
+    "不适定逆问题",
+    "正则化",
+    "DEQ"
+  ],
+  "abstract": "揭示权重绑定卷积 DEQ 等价于带罚项的 Landweber 迭代，隐式学习最优滤波多项式。",
+  "body": [
+    {
+      "type": "p",
+      "text": "深度平衡模型（Deep Equilibrium Model, DEQ）由 Bai 等人于 2019 年提出，其核心思想是：神经网络不需要逐层显式地堆叠有限层，而是将网络输出 $z$ 定义为参数化映射 $f_\\theta$ 的不动点方程 $z = f_\\theta(z; y)$ 的唯一解。在求解时，DEQ 通过 Anderson 加速或 Broyden 方法在不动点上做隐式微分，从而将\"深度\"无限化但计算成本有限。这一架构近年来在语言建模、扩散模型逆问题和科学计算中显示出强大能力。然而，从逆问题理论的角度看，DEQ 的\"无穷层迭代\"与经典迭代正则化方法（如 Landweber、共轭梯度）之间存在着深刻的数学对偶性，本文旨在系统揭示这一对偶性并由此导出 DEQ 的内禀正则化机制。"
+    },
+    {
+      "type": "p",
+      "text": "考虑一个带权重绑定（weight-tied）的卷积 DEQ，其单步更新为 $z^{k+1} = W z^k + \\beta A^\\top (y - A z^k)$，其中 $W$ 是参数化卷积核，$A$ 是已知的线性前向算子，$y$ 是观测。该迭代在不动点 $z^*$ 处收敛要求 $W - \\beta A^\\top A$ 是压缩算子。表面上这是对动力系统的描述，但当我们将 $z^k$ 在 $A$ 的奇异值基 $\\{v_i\\}$ 上展开 $z^k = \\sum_i c_i^k v_i$ 时，每一分量 $c_i^k$ 的演化遵循 $c_i^{k+1} = (w_i - \\beta \\sigma_i^2) c_i^k + \\beta \\sigma_i \\langle y, u_i\\rangle$，其中 $\\{u_i, v_i, \\sigma_i\\}$ 为 $A$ 的奇异值系统。这一分解清晰表明：DEQ 的无穷层迭代实际上是在频域上对每个分量独立施加了一个多项式滤波 $f_k(\\sigma_i) = 1 - (1 - w_i + \\beta \\sigma_i^2)^k$。"
+    },
+    {
+      "type": "math",
+      "latex": "z^{k+1} = (1 - \\alpha)\\,z^k + \\alpha\\,W\\,z^k + \\alpha \\beta\\, A^\\top (y - A z^k), \\quad \\text{等价于 Landweber + 滤波 } f_k(\\sigma) \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "公式 (1) 是本文的核心等价关系。在收敛的不动点处，$z^\\ast$ 是方程 $z = W z^\\ast + \\beta A^\\top (y - A z^\\ast)$ 的解，等价于 $(I - W + \\beta A^\\top A) z^\\ast = \\beta A^\\top y$，其形式上与 Tikhonov 正则化 $A^\\top A + \\lambda I$ 的正规方程高度相似，但这里的\"正则化矩阵\"是 $I - W$，而非简单的 $\\lambda I$。这一区别至关重要：$W$ 是可学习的卷积核，因此 DEQ 实际上学习了一个与频谱结构相匹配的\"自适应滤波器\"，远比标量 Tikhonov 的全频段均匀惩罚更精细。"
+    },
+    {
+      "type": "math",
+      "latex": "z^\\ast = (A^\\top A + \\lambda_\\theta\\, I)^{-1} A^\\top y, \\quad \\lambda_\\theta = \\frac{1 - w(\\xi)}{\\beta} \\quad \\text{为频谱依赖的\"有效正则化参数\"} \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "公式 (2) 揭示了 DEQ 的核心正则化机制：有效正则化参数 $\\lambda_\\theta(\\xi) = (1 - \\hat{w}(\\xi)) / \\beta$ 在频域上是各向异性的。在 $A$ 的高信噪比区域（即对应大奇异值 $\\sigma_i$ 的频段），DEQ 倾向于学习 $\\hat{w}(\\xi) \\to 0$，使 $\\lambda_\\theta$ 较小，从而保留这些频段的信息；在 $A$ 的低信噪比区域（小奇异值），DEQ 倾向于学习 $\\hat{w}(\\xi) \\to 1$，使 $\\lambda_\\theta$ 较大，从而压制噪声。这一行为与 Wiener 滤波器的最优频谱响应 $H_{\\mathrm{Wiener}}(\\xi) = \\sigma_i^2 / (\\sigma_i^2 + \\sigma_\\eta^2 / \\sigma_f^2)$ 在定性上完全一致，意味着 DEQ 实际上隐式地学习了一个数据驱动的 Wiener 滤波器。"
+    },
+    {
+      "type": "math",
+      "latex": "\\|W\\|_{\\mathrm{op}} < 1 - \\alpha\\beta\\sigma_{\\max}^2(A), \\quad \\text{即 } \\rho(W - \\beta A^\\top A) < 1 \\tag{3}",
+      "display": false
+    },
+    {
+      "type": "p",
+      "text": "不动点迭代收敛的压缩映射条件 (3) 构成了 DEQ 训练中的一个隐式权重正则化器。任何违反此条件的权重配置都会导致不动点迭代发散，从而在反向传播中产生爆炸梯度。鉴于此，本文提出将 (3) 作为谱范数约束显式纳入训练目标：$\\min_\\theta \\mathcal{L}(\\theta) + \\eta \\max(0, \\|W_\\theta\\|_{\\mathrm{op}} - (1 - \\alpha\\beta\\sigma_{\\max}^2))^2$。该约束通过 PGD 投影或凸近似在每次梯度步后维持，确保 DEQ 在前向和反向传播中都处于收敛域内。"
+    },
+    {
+      "type": "p",
+      "text": "本文的主要贡献可总结为如下命题：权重绑定的卷积 DEQ 是一类隐式的迭代正则化器，其在不动点处的解等价于在频域各向异性的 Tikhonov/Wiener 解，而不动点收敛的压缩条件提供了对网络权重的谱范数正则化。这一理论框架为 DEQ 在逆问题中的应用提供了系统的数学基础。展望未来，我们认为可进一步将这一对偶性推广至随机 DEQ（其中 $W$ 是随机算子）和多尺度 DEQ（其中 $W$ 随深度自适应变化），有望在分布式大规模成像逆问题中开发出兼具收敛性保证与表达能力的下一代深度正则化器。"
+    }
+  ]
+}

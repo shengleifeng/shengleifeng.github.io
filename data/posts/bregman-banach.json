@@ -1,0 +1,70 @@
+{
+  "id": "bregman-banach",
+  "title": "Banach 空间中的 Bregman 距离正则化：当 Tikhonov 丧失最优性时",
+  "date": "2026-03-28",
+  "tags": [
+    "正则化理论",
+    "Bregman 距离",
+    "Banach 空间"
+  ],
+  "abstract": "用 Bregman 距离替代二次范数，构造非对称的广义 Tikhonov 并证明其收敛优势。",
+  "body": [
+    {
+      "type": "p",
+      "text": "当解空间不是 Hilbert 空间时——例如 $X = L^1(\\Omega)$（对应稀疏解）、$X = \\mathrm{BV}(\\Omega)$（对应分段常数解）或 $X = \\mathcal{M}(\\Omega)$（Radon 测度空间）——使用 $\\ell_2$ / $L^2$ 范数作为 Tikhonov 正则项在概念上是错配的。此时真实解具有稀疏性或间断性，而二次范数在原点处不可微，且其对应的对偶范数在无穷远增长过快，无法诱导出几何上正确的稀疏诱导结构。"
+    },
+    {
+      "type": "p",
+      "text": "Bregman 距离正则化以一个凸泛函 $J: X \\to \\mathbb{R} \\cup \\lbrace +\\infty \\rbrace$ 替代二次范数，定义关于 $J$ 在 $x_0$ 处、次梯度 $p \\in \\partial J(x_0)$ 的非对称距离："
+    },
+    {
+      "type": "math",
+      "latex": "D_J^p(x, x_0) = J(x) - J(x_0) - \\langle p, x - x_0\\rangle, \\quad p \\in \\partial J(x_0), \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\langle \\cdot, \\cdot \\rangle$ 是 $X$ 与对偶空间 $X^*$ 之间的对偶配对。当 $J(x) = \\tfrac{1}{2}\\|x\\|_2^2$ 时，$D_J^p(x, x_0) = \\tfrac{1}{2}\\|x - x_0\\|_2^2$，回到经典 Tikhonov。但对 $J(x) = \\|x\\|_1$ 或 $J(x) = |x|_{\\mathrm{BV}}$，Bregman 距离能正确编码几何稀疏性。"
+    },
+    {
+      "type": "p",
+      "text": "考虑线性不适定逆问题 $Ax = y^\\delta$，其 Bregman 距离正则化解定义为："
+    },
+    {
+      "type": "math",
+      "latex": "x_\\alpha^\\delta = \\arg\\min_{x \\in X}\\;\\tfrac{1}{2}\\|Ax - y^\\delta\\|^2 + \\alpha\\, D_J^{p^\\dagger}(x, x_0), \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $p^\\dagger \\in \\partial J(x^\\dagger)$，$x^\\dagger$ 是真解。变分不等式分析表明（Osborne-Sherbourne、Schönlieb-Poerschke）：若源条件 $A^*w \\in \\partial J(x^\\dagger)$ 对某个 $w \\in Y$ 成立，则有如下收敛率："
+    },
+    {
+      "type": "math",
+      "latex": "D_J^{p^\\dagger}(x_\\alpha^\\delta, x^\\dagger) = \\mathcal{O}(\\delta), \\quad \\|x_\\alpha^\\delta - x^\\dagger\\| = \\mathcal{O}(\\sqrt{\\delta}), \\quad \\alpha \\asymp \\delta. \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "对比同源条件下的 Tikhonov：Bregman 正则化在 Banach 空间逆问题中获得的收敛率严格优于 Hilbert 框架。在某些情形下，$J$ 的强凸性可被弱凸性取代（subquadratic source condition），仍能保证线性收敛："
+    },
+    {
+      "type": "math",
+      "latex": "D_J^{p^\\dagger}(x_\\alpha^\\delta, x^\\dagger) \\le C\\,|\\log \\alpha|^{-p}, \\quad p > 0, \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "这是 Bregman 框架对 Tikhonov 丧失最优性的根本修复。进一步，将迭代法与 Bregman 距离结合可得到 Bregman 迭代（Bregman iteration / proximal gradient）："
+    },
+    {
+      "type": "math",
+      "latex": "x^{k+1} = \\arg\\min_x\\;\\tfrac{1}{2}\\|Ax - y^\\delta\\|^2 + \\alpha\\, D_J^{p^k}(x, x^k), \\tag{5}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其在 $J$ 严格凸时可视为镜像下降（mirror descent）的一种特殊形式，统计学习意义下对应于 Bregman 散度的指数族先验。在图像去模糊、稀疏信号恢复、压缩感知 MRI、参数识别反问题中，Bregman 正则化已成为处理非 Hilbert 几何的标准工具。其与现代深度学习中的信息几何（如自然梯度法）也形成自然的对应关系。"
+    }
+  ]
+}

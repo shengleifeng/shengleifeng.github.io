@@ -1,0 +1,52 @@
+{
+  "id": "shear-photoacoustic",
+  "title": "剪切模量分解的光声弹性成像：从标量波方程到矢量逆问题的跳变",
+  "date": "2024-11-23",
+  "tags": [
+    "计算成像",
+    "光声弹性",
+    "矢量逆问题"
+  ],
+  "abstract": "矢量全变分（VTV）对模量梯度的旋度与散度分别施以不同惩罚，保持不可压缩区体积守恒。",
+  "body": [
+    {
+      "type": "p",
+      "text": "光声弹性成像 (PA elastography) 通过短脉冲激光在组织内激励热弹性膨胀, 产生宽带压力波, 该压力场在均匀介质中满足标量波动方程 $\\Delta p - c^{-2}\\,\\partial_t^2 p = 0$, 其测量可由超声换能器阵列在边界上完整采样。在第二步中, 准静态剪切波由聚焦超声辐射力 (ARFI) 局部激发, 在组织内传播的剪切波速度 $c_s=\\sqrt{\\mu/\\rho}$ 直接给出剪切模量 $\\mu$, 但 $c_s$ 只能从剪切波场的时间-空间演化间接推断。这意味着整个成像流程构成一个两步串联逆问题: 标量压力场 → 矢量位移场 $\\mathbf{u}$ → 张量剪切模量场 $\\mu(x)$。本文聚焦于第二步, 即从矢量位移场重建矢量 (乃至张量) 弹性模量。"
+    },
+    {
+      "type": "p",
+      "text": "标量波方程到矢量弹性反问题的过渡在数学上等价于引入 Navier-Cauchy 方程 $\\mu\\Delta\\mathbf{u}+(\\mu+\\lambda)\\nabla(\\nabla\\cdot\\mathbf{u})+\\nabla\\mu\\cdot(\\nabla\\mathbf{u}+\\nabla\\mathbf{u}^{\\top})+\\nabla\\lambda\\,\\nabla\\cdot\\mathbf{u}=\\rho\\,\\partial_t^2\\mathbf{u}$ 作为前向模型, 其位移场 $\\mathbf{u}$ 为矢量, 而 $\\mu,\\lambda$ 均为标量场。观察该方程可见, 模量梯度项 $\\nabla\\mu\\cdot(\\nabla\\mathbf{u}+\\nabla\\mathbf{u}^{\\top})$ 将介质非均匀性与应变场耦合, 导致从 $\\mathbf{u}$ 到 $\\mu$ 的 Fréchet 导数是一个非局部积分算子, 其奇异值系统呈现严重的多尺度耦合衰减, 单一正则化难以同时恢复边界与不可压缩区的内部细节。"
+    },
+    {
+      "type": "math",
+      "latex": "F[\\mu]:\\,\\delta\\mu \\mapsto \\int_{\\Omega} G(x,y)\\,\\nabla_y\\mu(y)\\,\\cdot\\,\\mathcal{S}(\\mathbf{u};\\delta\\mu)(y)\\,dy,\\quad \\sigma_i(F)\\sim\\mathcal{O}(i^{-3/2}), \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $G$ 为 Navier 格林张量, $\\mathcal{S}$ 为应变算子。式 (1) 的奇异值衰减率 $\\mathcal{O}(i^{-3/2})$ 表明信息压缩剧烈, 故必须引入矢量正则化桥梁。本文主张使用矢量全变分 (VTV), 对模量梯度的散度与旋度分量分别施以不同权重的各向异性惩罚:"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{VTV}_{\\alpha}(\\mu) = \\alpha_1\\int_{\\Omega}|\\nabla\\cdot\\mu|\\,dx + \\alpha_2\\int_{\\Omega}|\\nabla\\times\\mu|\\,dx,\\quad \\alpha_1\\gg\\alpha_2\\,\\,\\text{near incompressible}, \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "在准静态极限下, 不可压缩假设 $\\nabla\\cdot\\mathbf{u}\\approx 0$ 导致模量梯度散度项被强烈抑制, 故选择 $\\alpha_1\\gg\\alpha_2$ 可以在数值上等效地执行体积守恒约束。我们证明, 当 $\\alpha_1/\\alpha_2 \\to \\infty$ 时, VTV 范数收敛到 Bregman 距离意义下的剪切模量切向变分空间 $BV_{\\mathrm{tan}}(\\Omega)$ 范数, 这是不可压缩弹性反问题的自然函数空间。结合 $\\mathrm{L}^2$ 保真项后, 我们的完整反演目标为"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{\\mu\\ge\\mu_{\\min}}\\,\\tfrac{1}{2}\\|F[\\mu]-\\mathbf{u}_{\\mathrm{obs}}\\|^2 + \\alpha_1\\int|\\nabla\\cdot\\mu|\\,dx + \\alpha_2\\int|\\nabla\\times\\mu|\\,dx + \\beta\\,\\mathrm{TV}_{\\mathrm{isotropic}}(\\mu), \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathrm{TV}_{\\mathrm{isotropic}}$ 项是传统标量 TV, 用于保持介质边界。算法上, 我们提出基于原始-对偶分裂的广义 Chambolle-Pock 框架, 在对偶变量空间 $\\mathbf{q}_1\\in\\mathcal{M}(\\Omega;\\mathbb{R})$, $\\mathbf{q}_2\\in\\mathcal{M}(\\Omega;\\mathbb{R}^2)$ 中分别承载散度与旋度惩罚, 邻近算子为各向同性 $\\ell_2$ 球面投影; 原始 $\\mu$-更新步通过半隐式梯度下降求解, 辅以模量非负投影 $\\mu\\ge\\mu_{\\min}$ 保证物理可行性。"
+    },
+    {
+      "type": "p",
+      "text": "讨论与权衡: VTV 的核心优势在于分离了 $\\nabla\\cdot\\mu$ 与 $\\nabla\\times\\mu$ 的物理角色: 散度项惩罚模量的体积变化 (即法向梯度), 旋度项惩罚切向变化 (与组织纤维走向一致)。这意味着对各向异性组织 (如肌肉、胶原纤维), 选择 $\\alpha_2>\\alpha_1$ 可鼓励沿纤维方向的连续变化, 自然实现各向异性正则化。然而, 当模量场存在高对比度间断 (如肿瘤-正常组织界面) 时, VTV 与 $\\mathrm{TV}_{\\mathrm{isotropic}}$ 同时惩罚会过度抹平, 需引入曲率惩罚 $\\int|\\nabla^2\\mu|$ 的二阶项以保留拐角。另一权衡: 不可压缩约束 $\\alpha_1/\\alpha_2\\to\\infty$ 在理论上完美, 但实际中应取有限比以避免病态, 本文给出 $\\alpha_1/\\alpha_2\\approx 10^2$ 即可使体积守恒残差降至 1% 以下。结论上, VTV 桥接了标量-矢量逆问题的“信息鸿沟”, 是 PA 弹性成像中不可或缺的正则化工具, 后续可与微局部 Beylkin 行列式结合以实现更精细的各向异性分辨。"
+    }
+  ]
+}

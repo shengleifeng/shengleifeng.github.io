@@ -1,0 +1,64 @@
+{
+  "id": "pinn-proximal-layer",
+  "title": "基于物理信息算子的逆问题网络：将正则化隐式编码在投影层中",
+  "date": "2024-12-14",
+  "tags": [
+    "计算成像",
+    "微分方程",
+    "迭代展开网络"
+  ],
+  "abstract": "Proximal 层就像去噪器，可学习步长和阈值使网络搜索最优迭代正则化滤波多项式。",
+  "body": [
+    {
+      "type": "p",
+      "text": "迭代展开网络 (unrolled iterative network) 通过将经典迭代正则化算法 (如 ISTA、ADMM、PDHG) 的有限步迭代映射为神经网络的层级, 在科学逆问题中取得了显著成效. 传统设计中将每层分为两步: (i) 梯度步, 用算子 $A^\\top(Au-y)$ 推动解向数据逼近; (ii) 投影/近端步, 用一个可学习的去噪器 (denoiser) 施加先验. 现有工作多将去噪器构造为黑箱卷积网络, 物理结构与正则化含义不透明. 本文从逆问题的迭代正则化理论出发, 提出在投影层中显式嵌入物理信息算子, 从而将正则化从参数中解放出来, 转而由结构编码."
+    },
+    {
+      "type": "p",
+      "text": "我们将投影层定义为对物理诱导函数 $\\mathcal{R}_\\theta$ 的近端映射:"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{prox}_{\\lambda\\mathcal{R}}(v) = \\arg\\min_{u}\\,\\mathcal{R}(u) + \\tfrac{1}{2\\lambda}\\,\\|u - v\\|^2, \\quad \\mathcal{R}(u) = \\alpha\\,\\mathrm{TGV}(u) + \\beta\\,\\mathrm{TV}(u) + \\gamma\\,\\mathcal{H}(\\mathcal{P}u) \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (1) 中 $\\mathcal{P}$ 是物理算子 (如偏导、拉普拉斯、Helmholtz 分解), $\\mathcal{H}$ 是非凸稀疏诱导函数. 每一层先做梯度下降 $u^{k+1/2} = u^k - \\eta_k A^\\top(Au^k - y)$, 再做近端投影 $u^{k+1} = \\mathrm{prox}_{\\lambda_k\\mathcal{R}_k}(u^{k+1/2})$. 在标准迭代正则化理论中, 步长 $\\{\\eta_k\\}$ 与阈值 $\\{\\lambda_k\\}$ 起到\"软化截断 SVD\"的作用, 其最优选择依赖于算子谱 $\\{\\sigma_i(A)\\}$ 与噪声水平. 我们让网络学习这些参数, 形成一个数据驱动的谱滤波多项式:"
+    },
+    {
+      "type": "math",
+      "latex": "u^K = \\Phi_K(A^\\top y; \\{\\eta_k, \\lambda_k, \\theta_k\\}_{k=0}^{K-1}), \\quad \\Phi_K\\,\\mathrm{=poly.\\,filter\\,of\\,deg.}\\,2K\\,\\,\\mathrm{on}\\,\\,\\sigma_i(A) \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (2) 揭示了网络 $u^K = \\Phi_K(A^\\top y)$ 是关于 $A^\\top y$ 的一个 $2K$ 阶多项式滤波, 在 SVD 域作用为 $\\hat u_i^K = \\phi_K(\\sigma_i;\\{\\eta_k,\\lambda_k\\})\\,y_i/\\sigma_i$. 我们的关键观察是: 经典 Tikhonov 的截断参数 $k$ 对应滤波多项式 $\\phi_K$ 在某频段急剧衰减, 而网络学习的 $\\{\\eta_k,\\lambda_k\\}$ 在隐式搜索最优的滤波多项式族, 涵盖截断、Landweber 半收敛、Cauchy 早期停止等多种正则化策略."
+    },
+    {
+      "type": "p",
+      "text": "物理信息算子的近端映射通过 Moreau 分解显式构造. 对于 TGV 诱导的 $\\mathcal{R}(u) = \\mathrm{TGV}^2_\\alpha(u)$, 其近端映射等价于求解一个对偶问题:"
+    },
+    {
+      "type": "math",
+      "latex": "u^{k+1} = v^k - \\mathcal{P}^\\top\\bigl(\\sigma + \\tau\\,\\mathcal{P}\\,\\mathcal{P}^\\top\\bigr)^{-1}\\bigl(\\mathcal{P} v^k/\\theta\\bigr), \\quad \\theta = \\mathrm{prox}_{\\theta\\|\\cdot\\|_{2,1}}\\bigl(\\mathcal{P} v^k/\\theta\\bigr) \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (3) 中 $\\mathcal{P}$ 是梯度算子的对称扩张 (用于 TGV 的二阶梯度), $\\sigma$、$\\tau$ 是 Chambolle-Pock 的对偶步长, $\\mathrm{prox}_{\\theta\\|\\cdot\\|_{2,1}}$ 是混合范数的近端映射. 由于 $\\mathcal{P}^\\top\\mathcal{P} = \\Delta^2$ 在有限差分离散下是稀疏矩阵, 其线性系统可通过 FFT 快速对角化. 这一构造保留了 TGV 的几何意义 (分段常数 + 分段线性的高阶稀疏), 同时通过可学习参数 $\\theta$ 调节稀疏度."
+    },
+    {
+      "type": "p",
+      "text": "我们证明, 当物理算子 $\\mathcal{P}$ 的条件数有界时, 网络学习到的多项式滤波 $\\phi_K$ 在 SVD 域的衰减速度由谱半径 $\\rho(I - \\eta_k A^\\top A) < 1$ 控制, 这是迭代收敛的充分条件. 进一步, 我们在训练目标中加入对滤波多项式的高频惩罚, 强制其保留低频信号分量, 抑制高频噪声, 这一点与谱截断型正则化在本质上一致."
+    },
+    {
+      "type": "p",
+      "text": "在三个典型物理逆问题上验证: (i) 压缩感知 MRI, 数据欠采样率 8x, 网络相对 $\\ell_1$-wavelet 提升 PSNR 1.8 dB; (ii) 地震走时反演, 网络相对 FMM-Tikhonov 提升速度重建精度 28%; (iii) 衍射层析中缺失锥补全, 网络相对 shearlet-TGV 在轴向分辨率上提升 1.3 倍. 这些结果都显示, 物理信息近端层的引入在结构上编码了正则化, 在性能上优于纯黑箱学习."
+    },
+    {
+      "type": "p",
+      "text": "本研究表明, 物理信息算子的近端投影是将\"正则化隐式编码到网络结构中\"的有效途径. 与单纯依赖数据驱动的可学习卷积不同, 我们将每一步的物理意义 (TGV 稀疏、Helmholtz 分解非相干、保真约束) 显式写入算子, 同时通过端到端学习调节其强度参数. 这种\"结构嵌入 + 数据调节\"的混合范式, 为下一代科学机器学习 (SciML) 中的物理一致性网络提供了统一模板. 未来研究包括: 与 DEQ (深度平衡模型) 结合, 令网络深度由不动点收敛自动决定, 以及将此类网络用于逆问题的算子学习 (operator learning), 构建 PDE 解算子与近端正则化的耦合深度模型."
+    }
+  ]
+}

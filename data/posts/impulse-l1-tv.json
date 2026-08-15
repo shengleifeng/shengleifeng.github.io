@@ -1,0 +1,52 @@
+{
+  "id": "impulse-l1-tv",
+  "title": "带脉冲噪声的成像逆问题：数据保真项从 ℓ₂ 到 ℓ₁ 的飞跃及正则化耦合",
+  "date": "2025-11-08",
+  "tags": [
+    "计算成像",
+    "正则化",
+    "ℓ₁"
+  ],
+  "abstract": "从 Moreau 分解出发构造原始-对偶算法，分析 ℓ₁ 与 TV 在对偶域的相互侵消机制。",
+  "body": [
+    {
+      "type": "p",
+      "text": "在电子显微、压缩感知 MRI 以及低剂量 CT 等成像模态中, 观测数据常被脉冲噪声 (salt-and-pepper noise) 或探测器坏点所污染, 这类噪声的概率密度呈重尾分布, 与标准高斯假设严重偏离。具体而言, 噪声 $\\eta$ 的分布可建模为 $\\mathbb{P}(\\eta = \\pm s) = p/2$, $\\mathbb{P}(\\eta = 0) = 1 - p$, 其中 $s$ 为饱和值, $p$ 为坏点率。此时, 若仍采用 $\\ell_2$ 保真度 $\\|A x - y\\|_2^2$, 由于二次损失对大残差呈线性惩罚, 少量极端坏点将主导整个目标函数, 致使反演在结构化信号上出现\"伪结构\"。这一观察促使我们将数据保真项从 $\\ell_2$ 跃迁至 $\\ell_1$, 但随之而来的是优化景观的根本改变: 损失函数非光滑、梯度在零点不连续, 经典梯度类算法失效。"
+    },
+    {
+      "type": "p",
+      "text": "本文研究的中心变分问题为 $\\min_{x}\\,\\|A x - y\\|_1 + \\lambda\\,\\mathrm{TV}(x)$, 其中 $A \\in \\mathbb{R}^{m \\times n}$ 为线性测量算子, $\\mathrm{TV}(x) = \\|\\nabla x\\|_{2,1}$ 为各向同性全变分。该问题可改写为如下极大极小鞍点形式:"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{x}\\,\\max_{\\|p\\|_\\infty \\le 1}\\,\\langle A x - y, p\\rangle + \\lambda\\,\\mathrm{TV}(x) \\Leftrightarrow \\min_{x,z}\\,\\max_{p}\\,\\langle z, p\\rangle + \\|A z - y\\|_1 + \\lambda\\,\\mathrm{TV}(x) \\text{ s.t. } z = x. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中第一个等价通过对 $r = A x - y$ 引入指示函数 $\\iota_{\\{\\|\\cdot\\|_1 \\le 1\\}}$ 获得; 第二个等价通过引入分裂变量 $z$ 与对偶变量 $p$ 获得。Moreau 分解定理 $\\mathrm{prox}_{\\gamma \\|\\cdot\\|_1}(v) = v - \\gamma\\,\\mathrm{prox}_{\\|\\cdot\\|_* / \\gamma}(v/\\gamma)$ 告诉我们, $\\ell_1$ 的邻近算子可借助 $\\ell_\\infty$ 范数的邻近算子表达, 这为原始-对偶分裂算法提供了优雅的理论支撑。"
+    },
+    {
+      "type": "math",
+      "latex": "x^{k+1} = \\mathrm{prox}_{\\tau \\lambda \\mathrm{TV}}\\bigl(x^k - \\tau A^\\top \\bar p^k\\bigr), \\quad p^{k+1} = \\mathrm{prox}_{\\sigma}\\,\\bigl(p^k + \\sigma (2 A x^{k+1} - A x^k - y)\\bigr), \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathrm{prox}_{\\sigma}(v) = (v - \\sigma y) / \\max(1, |v - \\sigma y| / \\sigma)$ 为 $\\ell_1$ 共轭的逐分量软阈值, $\\mathrm{prox}_{\\tau \\lambda \\mathrm{TV}}$ 可由 Chambolle 投影算法精确求解。当步长满足 $\\tau \\sigma \\|A\\|^2 < 1$ 时, 上述 Chambolle-Pock 序列以 $O(1/k)$ 速率收敛至鞍点。"
+    },
+    {
+      "type": "p",
+      "text": "然而, $\\ell_1$ 与 TV 的对偶变量具有强烈的\"相互侵消\"机制: 盐点对应的大残差将 $p$ 的对应分量推向边界 $\\pm 1$, 而 TV 的对偶变量 $q$ 倾向于保持 $\\|q\\|_\\infty \\le 1$ 以避免对图像梯度的过度惩罚。当 $\\|p\\|_\\infty = 1$ 出现\"粘滞\"时, $A^\\top p$ 的梯度方向被截断, 致使 $x$ 的更新失去对坏点的鲁棒性。我们提出用 Huber 范数 $\\|\\cdot\\|_\\delta$ 在 $\\ell_1$ 与 $\\ell_2$ 之间建立光滑桥接:"
+    },
+    {
+      "type": "math",
+      "latex": "\\|r\\|_\\delta = \\sum_i \\bigl(|r_i| - \\tfrac{\\delta}{2}\\bigr)_+ + \\tfrac{1}{2\\delta} r_i^2\\,\\mathbf{1}_{|r_i| \\le \\delta}, \\quad \\delta = c\\,\\tau\\,\\mathrm{MAD}(\\{r_i\\}), \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "更深入地, 我们将 $\\ell_1$-TV 的迭代看作 Chambolle-Pock 在非光滑 Moreau 包络下的具体实现, 其对偶域的侵消行为实际上反映了 $\\ell_1$ 与 $\\mathrm{TV}^*$ 在极值点集 $S_1 \\times S_{\\mathrm{TV}^*}$ 上的非横截性。从这个角度, 可将 Huber 桥接视为对该非横截性的局部\"磨光\"。展望未来, 一个有意义的方向是将此框架与方差稳定化变换 (Anscombe 域) 结合, 在统一的广义线性模型下处理泊松-高斯混合噪声; 此外, 借助深度展开网络对步长与阈值的可学习化, 此类对偶侵消机制亦可被隐式校正, 这是我们目前正在探索的方向。"
+    }
+  ]
+}

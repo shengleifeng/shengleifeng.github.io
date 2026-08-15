@@ -1,0 +1,56 @@
+{
+  "id": "factorization-linear-sampling",
+  "title": "反散射问题中的线性采样法与因子分解法的谱结构对比",
+  "date": "2026-01-17",
+  "tags": [
+    "计算成像",
+    "不适定逆问题",
+    "反散射"
+  ],
+  "abstract": "对比两种远场方程的正则化理念，证明因子分解法的谱截断隐式实现了正则化。",
+  "body": [
+    {
+      "type": "p",
+      "text": "反散射问题(尤其是逆障碍散射)的远场测量在数学上可被表述为求解关于采样点 $z \\in \\mathbb{R}^n$ 的不适定方程。线性抽样法(LSM)与因子分解法(FM)是该领域的两大主流定性方法:它们均不显式重建散射体的物性分布,而是通过解算子方程的指示函数,以 $z$ 处的范数行为判定其是否位于散射体 $D$ 内部。"
+    },
+    {
+      "type": "p",
+      "text": "LSM 求解 $F\\,g_z = \\phi_z$,其中 $F: H^{1/2}(\\partial\\Omega) \\to L^2(S^2)$ 为远场算子,$\\phi_z(\\hat x) = e^{-ik\\hat x \\cdot z}$ 为以 $z$ 为中心的 Herglotz 波函数。当 $z$ 趋近 $D$ 的边界时,$F$ 的最小奇异值 $\\sigma_{\\min}(F)$ 出现双指数衰减 $\\sigma_{\\min} \\sim e^{-c/\\epsilon}$,$\\epsilon = \\mathrm{dist}(z, D)$,从而数值上不可分辨。"
+    },
+    {
+      "type": "math",
+      "latex": "\\sigma_{\\min}(F; z) \\asymp \\exp\\bigl(-c/\\epsilon\\bigr), \\quad \\epsilon = \\mathrm{dist}(z, \\partial D) \\to 0",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "FM 采取本质不同的范式:对远场算子 $F$ 进行极分解 $F = H^{1/2}\\,|T|\\,H^{1/2}$(其中 $|T| = (F^\\ast F)^{1/2}$ 为算子 $T$ 的绝对值,后者为 $F$ 与其对偶之间的关键桥梁)。FM 转而求解 $T\\,g = f$,从而将 LSM 中隐式的不适定性“前置”到 $T$ 的对称因式分解中。"
+    },
+    {
+      "type": "math",
+      "latex": "g_\\alpha^{\\mathrm{FM}} = \\sum_{i:\\sigma_i \\ge \\alpha} \\frac{\\langle f, v_i\\rangle}{\\sigma_i}\\,u_i, \\quad \\sigma_i = \\sqrt{\\lambda_i(T^\\ast T)}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**命题**(谱截断的等价性):FM 截断解 $g_\\alpha^{\\mathrm{FM}}$ 在 $L^2$ 范数意义下等价于对 $T$ 施加 Tikhonov-Phillips 正则化的极限情形 $\\beta \\to 0$,其中 $\\beta$ 为罚项权重。具体而言,$\\lim_{\\beta \\to 0}(T^\\ast T + \\beta I)^{-1}T^\\ast f = \\sum_{i}\\sigma_i/(\\sigma_i^2 + \\beta) \\langle f, v_i\\rangle u_i$,与 $g_\\alpha^{\\mathrm{FM}}$ 在 $\\sigma_i \\ge \\alpha$ 上的支撑集完全一致。"
+    },
+    {
+      "type": "p",
+      "text": "此性质赋予 FM 一个独特优势:紧支撑 $D$ 与 $T$ 的核空间 $\\mathcal{N}(T)$ 结构紧密耦合。**定理**(唯一性):若 $F$ 对应的散射体 $D$ 满足一致锥条件,且观测方向集合 $\\Lambda$ 在 $S^{n-1}$ 中稠密,则 $T = |F|^{1/2}$ 的零空间 $\\mathcal{N}(T)$ 仅包含对应于 $D$ 内部指示函数的非平凡元素,从而 FM 提供了 LSM 所不具备的严格数学唯一性论证。"
+    },
+    {
+      "type": "math",
+      "latex": "\\|g_z^{\\mathrm{FM}}\\|_{L^2(\\partial\\Omega)} \\to \\infty \\;\\Leftrightarrow\\; z \\in D, \\qquad \\|g_z^{\\mathrm{FM}}\\|_{L^2(\\partial\\Omega)} \\to C < \\infty \\;\\Leftrightarrow\\; z \\notin D",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "**讨论**:LSM 在数值实现上更简洁,但其谱结构对边界 $\\partial D$ 的接近度极度敏感;FM 通过算子因式分解将正则化嵌入“原子层”,其截断索引 $\\alpha$ 可被解读为可逆性的“信息阈”。在多频扩展情形下,FM 的极分解可被频率参数 $k$ 显式追踪,从而实现频率依赖的正则化切换,这在弹性波或电磁反散射的宽带应用中尤为重要。"
+    },
+    {
+      "type": "p",
+      "text": "**结论与展望**:本文从谱结构层面论证了 LSM 与 FM 在正则化机制上的本质差异:前者依赖显式 Tikhonov 罚项抑制噪声,后者通过算子分解的代数结构将正则化“先天”内化。这一对比为反散射问题的定性反演提供了理论选择依据。未来可探索二者的混合策略:以 FM 的指示函数作为粗定位,以 LSM 在边界处的灵敏度分析作为精化,实现多分辨率反演。"
+    }
+  ]
+}

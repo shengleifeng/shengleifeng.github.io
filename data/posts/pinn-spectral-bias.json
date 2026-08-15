@@ -1,0 +1,65 @@
+{
+  "id": "pinn-spectral-bias",
+  "title": "用于逆问题的 PINNs 为何常欠正则或过正则？",
+  "date": "2026-02-14",
+  "tags": [
+    "深度学习",
+    "PINN",
+    "正则化"
+  ],
+  "abstract": "从神经切线核的谱偏差角度解释 PINN 的频谱偏好，并提出空间高频显式惩罚的校准。",
+  "body": [
+    {
+      "type": "p",
+      "text": "物理信息神经网络（PINN）将数据拟合项 $\\mathcal{L}_\\mathrm{data}$ 和物理残差项 $\\mathcal{L}_\\mathrm{PDE}$ 加权求和作为多目标损失："
+    },
+    {
+      "type": "math",
+      "latex": "\\mathcal{L}(\\theta) = \\lambda_d\\,\\mathcal{L}_\\mathrm{data}(u_\\theta) + \\lambda_p\\,\\mathcal{L}_\\mathrm{PDE}(u_\\theta), \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "在 PDE 反问题中，这种加权本质上是隐式正则化，其效果取决于 $\\lambda_d/\\lambda_p$ 的比例与网络参数化能力之间的相互作用。我们试图回答：为何在实践中 PINN 经常出现欠正则（高频噪声未被滤除）或过正则（细节被抹平）这两种极端？"
+    },
+    {
+      "type": "p",
+      "text": "答案藏于神经切线核（NTK）框架。无限宽度极限下，$u_\\theta(x)$ 关于参数 $\\theta$ 的梯度诱导出一个再生核 $K_{\\mathrm{NTK}}(x, x')$，其特征值 $\\{ \\lambda_i^\\mathrm{NTK} \\}$ 编码了网络对各频率分量的学习难度。对多层感知机，理论分析表明："
+    },
+    {
+      "type": "math",
+      "latex": "\\lambda_i^\\mathrm{NTK} \\sim i^{-\\beta}\\,(1 + c_d\\,\\omega_i^2)^{-\\gamma}, \\quad \\omega_i \\sim i^{1/d}, \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\beta, \\gamma > 0$ 取决于激活函数与深度，$d$ 是输入维数。该式揭示了一个关键事实：NTK 的特征值随频率 $\\omega_i$ 单调衰减，衰减速率由 $\\gamma$ 控制。这意味着梯度下降首先沿 NTK 大特征值对应的低频通道流动，网络的参数化具有天然的谱偏好——倾向于先拟合低频成分，再缓慢学习高频细节。"
+    },
+    {
+      "type": "p",
+      "text": "对不适定反问题，这种谱偏是一把双刃剑。作为天然正则化，它抑制了高频噪声在早期迭代中的放大，对欠定问题的解起到了软支撑作用；作为不可控正则化，它过早停止了对真实高频信息的拟合，导致反演结果在具有间断或多尺度结构时过度平滑。我们将这两种现象统一为"
+    },
+    {
+      "type": "math",
+      "latex": "\\|u_\\theta - u^\\dagger\\|^2 \\le \\underbrace{\\sum_{i \\le N_\\mathrm{eff}} \\frac{\\sigma_i^2}{\\lambda_i^\\mathrm{NTK}}\\,\\rho_i^2}_{\\text{偏差项}} + \\underbrace{\\sum_{i > N_\\mathrm{eff}} \\lambda_i^\\mathrm{NTK}\\,\\rho_i^2\\,\\sigma_\\mathrm{noise}^2}_{\\text{方差项}}, \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $N_\\mathrm{eff}$ 是 NTK 有效特征数，$\\rho_i$ 是 $u^\\dagger$ 在 NTK 特征基下的展开系数，$\\sigma_\\mathrm{noise}^2$ 是数据噪声方差。式 (3) 明确显示：偏差项与方差项的最优平衡点恰好由 NTK 谱 $\\lambda_i^\\mathrm{NTK}$ 的衰减速率与数据噪声的相对强度共同决定。"
+    },
+    {
+      "type": "p",
+      "text": "校准策略：在损失函数中对空间高频施以显式惩罚。引入频域加权的损失"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathcal{L}_\\mathrm{cal}(\\theta) = \\lambda_d\\,\\mathcal{L}_\\mathrm{data} + \\lambda_p\\,\\mathcal{L}_\\mathrm{PDE} + \\mu\\,\\int |\\nabla^2 u_\\theta|^2\\,w(x)\\,dx, \\quad w(x) \\sim (1 + |\\xi|^2)^{-\\alpha}, \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $w$ 在 Fourier 域按 $(1+|\\xi|^2)^{-\\alpha/2}$ 衰减，等价于在原问题中加入一个 $\\alpha$ 阶 Sobolev 正则项。这一显式频域校准可有效纠正 NTK 谱偏的不平衡，使得 PINN 在反演多尺度介质参数（如多孔介质渗透率、断裂带弹性模量）时，能够保留必要的间断与多尺度结构。我们认为，将 NTK 谱分析与显式频域校准结合，是 PINN 在不适定反问题中训练稳定且细节保真的理论保障。"
+    }
+  ]
+}

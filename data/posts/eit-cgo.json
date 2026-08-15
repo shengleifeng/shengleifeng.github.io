@@ -1,0 +1,56 @@
+{
+  "id": "eit-cgo",
+  "title": "EIT 边界电压测量的极度不适定与 CGO 解的正则化奇迹",
+  "date": "2025-08-30",
+  "tags": [
+    "不适定逆问题",
+    "计算成像",
+    "EIT"
+  ],
+  "abstract": "揭示 CGO 核在傅里叶域扮演依赖频率的径向加权惩罚项，将信息深度限制在指数衰减范围内。",
+  "body": [
+    {
+      "type": "p",
+      "text": "电阻抗层析成像 (Electrical Impedance Tomography, EIT) 以边界电压 $V\\big|_{\\partial\\Omega}$ 为唯一观测量反演内部电导率 $\\sigma(x)$，构成 Calderón 问题的典型实现。其病态性的本质可由 Calderón 算子的奇异值衰减刻画：在二维光滑区域 $\\Omega$ 上，Dirichlet-to-Neumann 映射 $\\Lambda_\\sigma: H^{1/2}(\\partial\\Omega) \\to H^{-1/2}(\\partial\\Omega)$ 的奇异值以 $e^{-c n}$ 指数衰减，使得未经正则化的反演呈现无界噪声放大。本文不采用基于 Landweber 或 Tikhonov 的局部算法，而是借助复几何光学 (Complex Geometrical Optics, CGO) 解的解析结构，揭示 EIT 反问题内禀的正则化机制。"
+    },
+    {
+      "type": "p",
+      "text": "CGO 解构造一族指数增长的全纯函数 $\\mu_z(x)$，用以探测 $\\sigma$ 的内部分布。对任意 $z \\in \\mathbb{C}^n$，Cauchy-Riemann 方程 $\\partial_{\\bar x}\\mu_z = 0$ 的解可显式写为"
+    },
+    {
+      "type": "math",
+      "latex": "\\mu_z(x) = e^{i\\lambda\\langle x - z, \\zeta\\rangle}\\,(1 + \\omega_z(x)), \\quad \\|\\omega_z\\|_{L^\\infty(\\Omega)} \\le C\\,e^{-c\\,\\mathrm{Im}\\,\\lambda\\,|x-z|}, \\quad \\lambda \\to \\infty, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\zeta \\in \\mathbb{S}^{n-1}$ 为单位方向，$\\mathrm{Im}\\,\\lambda > 0$ 确保指数衰减误差项 $\\omega_z$ 在 $\\Omega$ 内一致有界。CGO 解的核心思想是：将 $\\sigma$ 的反演化归为对边界积分 $\\int_{\\partial\\Omega} \\mu_z\\,\\nu\\cdot(\\sigma\\nabla u)\\,ds$ 的内积方程，其中 $u$ 为对应的 EIT 调和函数。"
+    },
+    {
+      "type": "p",
+      "text": "为深入分析，我们将边界积分方程视为关于 $\\sigma$ 的第一类 Fredholm 算子 $T_\\lambda: \\sigma \\mapsto \\int_{\\partial\\Omega} \\mu_z\\,\\nu\\cdot(\\sigma\\nabla u)\\,ds$，并对其施行傅里叶分解。CGO 核的频谱局部化特性使得 $T_\\lambda$ 的奇异函数集中于空间频率 $\\xi$ 满足 $|\\xi| \\approx |\\lambda|$ 的频带内，从而将反问题的有效自由度限制在一个随 $\\lambda$ 平滑演化的低维子空间上。"
+    },
+    {
+      "type": "math",
+      "latex": "\\sigma_n(T_\\lambda) \\asymp e^{-c\\,\\mathrm{Im}\\,\\lambda\\,d}, \\quad d := \\mathrm{dist}(z, \\partial\\Omega), \\quad \\|T_\\lambda\\sigma\\|_{L^2(\\partial\\Omega)} \\le C\\,\\|\\sigma\\|_{L^2(\\Omega)}. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "命题 1 (CGO 内禀正则化): 奇异值 $\\sigma_n(T_\\lambda)$ 的衰减速率 $e^{-c\\,\\mathrm{Im}\\,\\lambda\\,d}$ 在频域上等价于一个对 $\\sigma$ 的径向加权惩罚 $W(\\xi) = e^{-c|\\xi|\\,d}$，其指数核的引入将信息的有效探测深度严格限制在距离边界 $d$ 的指数衰减范围内。这意味着对深部电导率扰动的可重建性受 $e^{-c\\,|\\xi|\\,d}$ 严格约束，任何超过该约束的反演策略都将不可避免地放大噪声。"
+    },
+    {
+      "type": "p",
+      "text": "在算法层面，Bukhgeim-Belinson-Uhlmann 提出的 $\\bar\\partial$ 方法将 CGO 解的构造转化为求解一个一阶 $\\bar\\partial$ 方程，可通过 $\\bar\\partial$-Neumann 问题的谱展开在 $O(N^3)$ 复杂度内完成。结合 Nachman (1996) 的全局唯一性定理和 Brown-Uhlmann (1997) 的构造性结果，可构建从噪声边界数据到分段常数电导率的稳定重构算法。"
+    },
+    {
+      "type": "math",
+      "latex": "\\|\\sigma - \\sigma^\\dagger\\|_{L^2(\\Omega)} \\le C\\,\\bigl\\|\\Lambda_\\sigma - \\Lambda_{\\sigma^\\dagger}\\bigr\\|_{H^{1/2} \\to H^{-1/2}}^{\\alpha}\\,\\mathrm{diam}(\\Omega)^{1-\\alpha}, \\quad 0 < \\alpha < 1. \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (3) 给出了在 Hölder 源条件 $\\sigma^\\dagger \\in \\mathcal{R}((T^\\ast T)^{\\alpha/2})$ 下的稳定收敛率，其指数 $\\alpha$ 完全由 CGO 衰减常数 $c$ 与区域几何 $\\mathrm{diam}(\\Omega)$ 决定。这一结果的意义在于：它将 EIT 从无结构的不适定反问题转化为具有清晰谱惩罚机制的可控反问题，为基于多重测量 (Multi-frequency EIT)、时间差分 (Difference EIT) 与贝叶斯反演 (MCMC) 的实用算法提供了严格的正则化基础。结论: CGO 不仅是 EIT 唯一性证明的工具，其内禀的指数加权结构本身就是一种几何正则化器，连接了解析函数的几何与反问题的稳定性。该视角可推广至各向异性电导率、混合边界条件以及逆散射中的 Beltrami 方程。"
+    }
+  ]
+}

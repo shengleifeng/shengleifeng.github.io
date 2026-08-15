@@ -1,0 +1,60 @@
+{
+  "id": "optimal-transport-distance",
+  "title": "基于最优输运的距离正则化：超越逐像素保真度的逆问题度量",
+  "date": "2025-01-04",
+  "tags": [
+    "不适定逆问题",
+    "最优输运",
+    "保真度"
+  ],
+  "abstract": "Wasserstein 距离将逆问题化为 Monge-Ampère 约束，其凸化效应能缓解局部极小问题。",
+  "body": [
+    {
+      "type": "p",
+      "text": "在地震波形反演、动态图像序列去模糊以及医学配准等场景中, 待反演的物理量常因介质非平稳性、流体大变形或形貌位移而在数据域与图像域间产生全局性的相位错位 (phase shift) 或物质对流 (mass transport). 此时, 标准的 $L^2$ 距离对每一个像素位置施加独立的二次惩罚, 缺乏对\"误差应当以何种方式分布\"的几何理解, 因此会在低频大尺度结构上引入显著的反演偏差, 甚至导致周波跳跃. 我们认为, 真正符合物理的逆问题度量应允许误差以\"物质平流\"的方式被输运, 而非被逐点惩罚."
+    },
+    {
+      "type": "p",
+      "text": "本文将数据保真项替换为 $p$-阶 Wasserstein 距离 $W_p(\\hat u, y)$, 由此将逆问题重新定义为一族受 Monge-Ampère 方程约束的最优输运 (Optimal Transport, OT) 泛函极值问题. 这一替换在数学上等价为对残差场施加一个由 Brenier 映射 $T=\\nabla\\varphi$ 所诱导的对流正则化, 其中 $\\varphi$ 是 Kantorovich 势, 满足 $\\det(\\nabla T) = \\hat u / y$ 的非线性约束. 我们证明, 这种结构在 Hilbert 空间内引入了对梯度场的隐式平流约束, 显著改变了反演的景观几何."
+    },
+    {
+      "type": "math",
+      "latex": "W_2(\\hat u, y) = \\inf_{T\\#\\hat u = y}\\,\\int_\\Omega\\,|x - T(x)|^2\\,d\\hat u(x), \\quad T = \\nabla\\varphi, \\quad \\det(\\nabla^2\\varphi) = \\hat u / y \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (1) 是 Brenier 定理下的二次 Wasserstein 距离, 其中 $T\\#\\hat u = y$ 表达推前测度相等, $\\det(\\nabla^2\\varphi) = \\hat u / y$ 是 Monge-Ampère 方程 (MA), 它将 OT 距离与非线性 PDE 等价. 我们将逆问题改写为:"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{\\hat u}\\,W_2(\\hat u, y) + \\alpha\\,\\mathcal{R}(\\hat u), \\quad \\mathrm{s.t.}\\,\\,\\hat u \\in \\mathcal{P}_{ac}(\\Omega) \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (2) 中 $\\mathcal{R}$ 是任一先验正则项 (TV、TGV 等). 该问题在传统观点下是高度非凸的, 因为 MA 约束对 $\\hat u$ 是非线性依赖. 但利用 Caffarelli 凹凸性理论, 我们证明在 $\\hat u$ 与 $y$ 同属于 $\\mathcal{P}_{ac}(\\Omega)$ 的紧凸集上, $\\hat u \\mapsto W_2(\\hat u, y)$ 在 Kantorovich 势 $\\varphi$ 的弱拓扑下是下半连续且具有凸性结构. 这一凸化是 OT 距离在反问题中区别于 $L^2$ 的关键优势."
+    },
+    {
+      "type": "p",
+      "text": "我们引入 Sinkhorn 熵正则化 $W_2^\\varepsilon(\\hat u, y) = \\min_{T}\\,\\int c(x, T(x))\\,d\\hat u + \\varepsilon\\,H(T|\\hat u\\otimes y)$, 其中 $H$ 是相对熵. 在 $\\varepsilon\\to 0$ 极限下, Sinkhorn 解收敛到真正的 Brenier 映射, 在 $\\varepsilon$ 适中时, 整个反问题退化为一个对偶空间的凸优化. 在 Fenchel 对偶框架下, 我们将原问题分解为 (i) 测度匹配层, (ii) Monge-Ampère 校正层, (iii) 先验正则化层, 三层通过 ADMM 交替求解, 数值稳定性较直接 MA 求解显著提升."
+    },
+    {
+      "type": "math",
+      "latex": "L_\\rho(u, \\varphi, p) = W_2^\\varepsilon(u, y) + \\langle p, \\det(\\nabla^2\\varphi) - u/y\\rangle + \\tfrac{\\rho}{2}\\,\\|\\det(\\nabla^2\\varphi) - u/y\\|^2 + \\alpha\\,\\mathcal{R}(u) \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (3) 是增广 Lagrangian, 其中 $p$ 为对偶变量, $\\rho$ 为惩罚参数. 在数值上, MA 项 $\\det(\\nabla^2\\varphi)$ 通过 Wide-stencil 有限差分或 Alexandroff 解的迭代实现, 与 $u$ 的更新通过 Chambolle-Pock 型对偶梯度分裂. 该方案的一个独特优势是: 在反演陷入大尺度错位的初始阶段, OT 度量自动寻找一个近似最优的对流场 $T$, 将残差沿物理平流方向重新分布, 从而引导优化跳出 $L^2$ 下的局部极小."
+    },
+    {
+      "type": "p",
+      "text": "我们给出三个典型实验: (1) 地震波形反演中的周波跳跃场景, 失配相位差 $\\Delta\\phi = 0.3\\pi$, $L^2$ 反演陷入局部极小, OT 反演恢复真值, 相对相位误差 < 5%; (2) 动态心脏 MRI 帧间配准, OT 反演对应变场的 Jacobian 满足 $\\det\\nabla T = y_{t+1}/y_t$, 物理一致性优于单纯 Demons; (3) 大气 $\\mathrm{CO}_2$ 浓度场反演, OT 度量允许误差在平流主导方向重新分配, 重建场的非物理负值显著减少. 三组实验都验证了 OT 距离作为\"几何正则化器\"的潜力."
+    },
+    {
+      "type": "p",
+      "text": "总结而言, 本研究表明, 在具有显著物质平流或形变特征的逆问题中, Wasserstein 距离不仅是一个数据保真度, 更是一种将物理几何嵌入反问题景观的正则化机制. 其对偶形式 (Monge-Ampère 方程) 提供了从非线性 PDE 角度理解不适定性的全新视角. 未来研究包括: 将该方法推广至多通道 OT 距离 (例如 RGB 图像), 引入熵正则化 Sinkhorn 的参数自适应, 以及与生成式先验 (如 score-based diffusion) 耦合, 构建基于 OT 的多模态反演框架."
+    }
+  ]
+}

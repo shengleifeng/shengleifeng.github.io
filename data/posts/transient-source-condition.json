@@ -1,0 +1,56 @@
+{
+  "id": "transient-source-condition",
+  "title": "针对瞬态过程的广义源条件与迭代正则化的最优收敛",
+  "date": "2025-08-02",
+  "tags": [
+    "不适定逆问题",
+    "迭代正则化",
+    "源条件"
+  ],
+  "abstract": "为具有特征时间尺度的瞬态逆问题构建\"时域源条件\"，证明共轭梯度正则化解阶最优。",
+  "body": [
+    {
+      "type": "p",
+      "text": "正则化收敛率分析本质性地依赖源条件 (source condition)，它在 Hilbert 空间正则化中表现为 $x^\\dagger \\in \\mathcal{R}((A^\\ast A)^\\mu)$ 的 Hölder 光滑性假设。然而对具有特征时间尺度的瞬态逆问题（如随时间指数衰减的热源识别），单纯的空间光滑性无法完整刻画解的时域结构。本文提出\"时域源条件\"，将真解的时间光滑度与频域衰减速率显式挂钩，从而为瞬态迭代正则化的最优收敛率提供精确的常数估计。"
+    },
+    {
+      "type": "p",
+      "text": "我们考虑抽象的瞬态 Banach 空间 $X_t = L^2(0, T; H^s(\\Omega))$ 上的第一类算子方程 $A x = y^\\delta$。设 $A$ 在 $X_t$ 上紧且具有 Laplace 谱分解 $A^\\ast A \\phi_n = \\lambda_n \\phi_n$，则解的瞬态特征可由 Laplace 变换 $\\hat{x}(p) = \\int_0^\\infty e^{-pt} x(t)\\,dt$ 提取。"
+    },
+    {
+      "type": "math",
+      "latex": "x^\\dagger(t) = \\int_0^\\infty (t-s)^{\\beta-1}\\,e^{-\\gamma s}\\,\\phi(s)\\,ds, \\quad \\|\\phi\\|_{L^2(0,\\infty)} \\le M, \\quad \\beta > 0, \\gamma > 0. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (1) 中的时域核 $(t-s)^{\\beta-1}\\,e^{-\\gamma s}$ 融合了卷积型记忆 ($\\beta$) 与指数衰减 ($\\gamma$)。从 Laplace 域看，它对应一个解析函数 $\\hat{x}(p) = \\Gamma(\\beta)\\,(p+\\gamma)^{-\\beta}\\,\\hat{\\phi}(p)$，其在 $\\mathrm{Re}(p) > -\\gamma$ 半平面解析。命题 1 (时域源条件等价性): $\\hat{x}(p)$ 在半平面 $\\mathrm{Re}(p) > -\\gamma$ 的解析延拓半径 $\\gamma$ 严格等于时域源条件中的衰减常数。该半径决定了迭代正则化（特别是 CG 法）所能达到的最优收敛率阶。"
+    },
+    {
+      "type": "math",
+      "latex": "\\|\\hat x^\\dagger\\|_{H^2(\\mathrm{Re}\\,p > -\\gamma)} \\le C\\,M\\,\\Gamma(\\beta)\\,\\gamma^{1/2-\\beta}, \\quad \\sigma(\\hat A^\\ast \\hat A) \\cap (-\\gamma, \\infty) = \\emptyset. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (2) 中的 Hardy 空间 $H^2$ 范数约束了 $\\hat{x}^\\dagger$ 的解析边界行为，而 $\\hat A^\\ast \\hat A$ 的谱支撑条件则保证 $\\hat{x}^\\dagger$ 不落入算子的零空间。两者结合导出了迭代正则化的最优收敛率："
+    },
+    {
+      "type": "math",
+      "latex": "\\|x_{k_\\star}^\\delta - x^\\dagger\\|_{X_t} \\le C(\\beta, \\gamma)\\,\\delta^{\\beta/(\\beta+1)}, \\quad k_\\star \\sim \\|x^\\dagger\\|^{1/\\beta}\\,\\delta^{-1/(\\beta+1)}. \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (3) 给出了 CG 迭代的最优停止迭代 $k_\\star$ 的显式先验估计。该估计的指数 $\\beta/(\\beta+1)$ 严格满足正则化阶最优的下界 (Hohage-Weidlinger 猜想)，且常数 $C(\\beta, \\gamma)$ 完全由时域源条件参数 $\\beta, \\gamma$ 决定，可在反演前进行离线标定。推论 (后验停止准则): 当 $\\beta$ 未知时，可由残差比 $r_k := \\|A x_k^\\delta - y^\\delta\\| / \\delta$ 的行为推断：当 $r_k$ 由 $1$ 开始显著上升时，对应的 $k$ 即可作为 $k_\\star$ 的后验估计。"
+    },
+    {
+      "type": "p",
+      "text": "在算法层面，我们将 CG 迭代与 Tikhonov 平滑结合形成 $\\alpha$-CG：每 $K_0$ 步在残差上做一次岭回归平滑以抑制瞬态反演的振荡。这种内-外迭代耦合在数值上等价于对 $A^\\ast A$ 的预条件，显著加速了 $k_\\star$ 附近的收敛。讨论: 与经典的 Hölder 源条件 $x^\\dagger \\in \\mathcal{R}((A^\\ast A)^\\mu)$ 相比，时域源条件的优势在于 (i) 物理可解释性（衰减常数 $\\gamma$ 对应于系统的特征时间尺度）；(ii) 适用范围广（涵盖振荡型、多项式型等非指数型瞬态）；(iii) 便于时-空分离的预条件设计。其代价是 Laplace 域的解析延拓需要额外的理论分析工具（Phragmén-Lindelöf 原理）。"
+    },
+    {
+      "type": "p",
+      "text": "结论: 时域源条件将瞬态逆问题的正则化收敛率从\"阶最优\"提升到\"带显式常数的精确最优\"，并为 CG 类的迭代正则化算法提供了可计算的后验停止准则。该框架可推广至时间-空间各向异性源条件、时变正则化参数以及多物理场耦合的瞬态反问题。"
+    }
+  ]
+}

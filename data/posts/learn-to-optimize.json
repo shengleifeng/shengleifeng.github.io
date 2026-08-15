@@ -1,0 +1,65 @@
+{
+  "id": "learn-to-optimize",
+  "title": "不适定问题的\"学习 to 优化\"：微分规划中的超参数梯度流正则化",
+  "date": "2024-11-16",
+  "tags": [
+    "不适定逆问题",
+    "元学习",
+    "微分规划"
+  ],
+  "abstract": "超梯度流本身起到去噪作用，参数学习等价于在参数空间执行受控的抗噪声朗之万扩散。",
+  "body": [
+    {
+      "type": "p",
+      "text": "在不适定逆问题中, 正则化参数 $\\alpha$ 的选择长期被视为“调参黑艺术”。本文将其提升为可微分规划 (differentiable programming) 框架下的二阶学习问题: 构造双层优化 $\\min_{\\alpha}\\mathcal{L}(\\alpha;y),\\,\\mathrm{s.t.}\\,\\,x^\\ast(\\alpha)\\in\\arg\\min_x\\,\\Phi(x;\\alpha,y)$, 其中内层 $\\Phi(x;\\alpha,y)=\\tfrac{1}{2}\\|Ax-y\\|^2+\\alpha\\,\\mathcal{R}(x)$ 为带罚项的逆问题目标函数, 外层 $\\mathcal{L}$ 为下游任务 (如去噪、分割) 的损失函数。我们关注的中心问题是: 当内层解 $x^\\ast(\\alpha)$ 通过隐式迭代 (proximal gradient, ADMM, FISTA) 给出时, 如何有效地将 $\\alpha$ 的梯度流反向传播以学习最优正则化参数?"
+    },
+    {
+      "type": "p",
+      "text": "本文应用隐函数定理 (IFT) 解决上述问题。内层解的最优性条件为 $\\nabla_x\\Phi(x^\\ast(\\alpha);\\alpha,y)=0$, 在正则性假设下隐函数定理保证 $x^\\ast$ 在 $\\alpha$ 附近可微, 且"
+    },
+    {
+      "type": "math",
+      "latex": "\\frac{\\partial x^\\ast}{\\partial\\alpha} = -\\big[\\nabla^2_{xx}\\Phi(x^\\ast)\\big]^{-1}\\,\\frac{\\partial^2\\Phi}{\\partial\\alpha\\partial x}, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "结合链式法则, 外层超梯度为 $\\partial\\mathcal{L}/\\partial\\alpha = \\langle\\partial x^\\ast/\\partial\\alpha,\\,\\nabla_x\\mathcal{L}\\rangle$, 我们将其记作"
+    },
+    {
+      "type": "math",
+      "latex": "\\frac{d\\alpha}{dt} = -\\eta\\,\\frac{\\partial\\mathcal{L}}{\\partial\\alpha} = -\\eta\\,\\frac{\\partial x^\\ast}{\\partial\\alpha}\\,\\nabla_x\\mathcal{L}(x^\\ast(\\alpha)), \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $H=\\nabla^2_{xx}\\Phi(x^\\ast(\\alpha))$ 是内层 Hessian。该公式与经典元学习的“超梯度”公式 (Lorraine et al., 2020; Franceschi et al., 2017) 在形式上一致, 但本文的关键发现是: 当 $\\mathcal{L}$ 与 $\\Phi$ 同分布 (例如同为最小二乘) 时, 超梯度流的散度结构在参数空间 $\\alpha$ 上诱导出非平凡的耗散项。具体地, 我们证明 $\\alpha$ 的学习动力学可被重写为受控的随机微分方程:"
+    },
+    {
+      "type": "math",
+      "latex": "d\\alpha = -\\eta\\,\\nabla_{\\alpha}\\mathcal{L}\\,dt + \\sqrt{2\\eta\\,\\Sigma(\\alpha)}\\,dW_t,\\quad \\Sigma(\\alpha)=\\mathrm{tr}(H^{-1}\\,\\mathrm{Cov}(\\delta y)\\,H^{-1}), \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\Sigma(\\alpha)$ 恰好是 Tikhonov 后验协方差矩阵的迹形式 (data-driven noise covariance), 起到扩散项的作用。这一关键观察揭示: 外层学习并不仅仅是优化 $\\alpha$, 它同时对 $\\alpha$ 进行了“正则化路径上的去噪”, 因为 $\\Sigma(\\alpha)$ 在信息富集区域 (即 $H^{-1}$ 的小特征值方向) 趋近零, 从而抑制了 $\\alpha$ 在欠约束方向上的随机游走。换言之, 参数的学习过程被证明等价于在参数空间执行一种受控的、抗噪声的朗之万扩散 (Langevin diffusion), 其漂移来自 $\\mathcal{L}$ 梯度, 涨落被 Hessian 几何所调制。"
+    },
+    {
+      "type": "p",
+      "text": "算法层面, 由于 $H^{-1}$ 难以直接求逆, 我们采用截断共轭梯度法 (CG) 在 $K$ 步内隐式求解 $\\partial x^\\ast/\\partial\\alpha$, 即 second-order optimization with Hessian-free backprop。该方法在大型成像逆问题中可扩展至 $\\mathcal{O}(NK)$ 的复杂度。理论分析上, 我们在 $H$ 满足源条件 $x^\\dagger\\in\\mathcal{R}(H^{\\mu})$ 时证明: 外层 $\\alpha$ 的学习速率满足"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathbb{E}\\,\\|\\alpha^{(T)}-\\alpha^{\\ast}\\|^2 \\le C\\,T^{-1/2},\\quad \\alpha^{\\ast}=\\arg\\min_{\\alpha}\\,\\mathcal{L}, \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "该速率恰好是次线性收敛, 与经典随机近似一致。"
+    },
+    {
+      "type": "p",
+      "text": "讨论与权衡: 学习 to 优化的最大优势在于 $\\alpha$ 的分布能自适应于具体问题 (例如每张图像、每个患者), 而非依赖手工 H-param。但其代价是: (1) 计算成本: 每次外层更新都需在内层完整执行 proximal 迭代, 总复杂度为 $\\mathcal{O}(K_{\\mathrm{inner}}\\cdot K_{\\mathrm{CG}})$; (2) 分布外风险: 当测试数据与训练分布偏离时, 学习到的 $\\alpha$ 可能失效, 出现所谓“正则化幻觉”。我们建议在 H-param 训练时引入 worst-case 鲁棒约束, 如 Wasserstein 球 $\\{\\alpha:\\,\\mathrm{W}_2(p_{\\mathrm{train}},p_{\\mathrm{test}})\\le\\rho\\}$。结论上, 本文将“参数学习”从黑箱升格为具有清晰动力学含义的正则化理论, 并指出其本质是一种“被几何调制的朗之万扩散”, 为深度展开网络 (unrolled networks) 提供了更可靠的训练范式。"
+    }
+  ]
+}

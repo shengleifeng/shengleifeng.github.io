@@ -1,0 +1,61 @@
+{
+  "id": "ghost-imaging-cs",
+  "title": "幽灵成像的逆问题重构：从二阶关联到压缩感知",
+  "date": "2026-04-04",
+  "tags": [
+    "计算成像",
+    "幽灵成像",
+    "压缩感知"
+  ],
+  "abstract": "将鬼成像建模为带正性约束的线性逆问题，论证 CS 路径在欠采样下突破衍射极限的可能。",
+  "body": [
+    {
+      "type": "p",
+      "text": "传统鬼成像依赖大量随机散斑的二阶强度关联来重构物体图像：设参考臂探测器读数为 $S_i(x)$，物臂桶探测器读数为 $B_i$，相关法重建公式 $G^{(2)}(x) = \\langle S_i(x) B_i \\rangle - \\langle S_i(x) \\rangle \\langle B_i \\rangle$ 在统计上是无偏的，但实际信噪比随散斑数 $N$ 仅以 $O(\\sqrt{N})$ 增长，限制了采样效率与时间带宽积。深入分析表明，二阶关联本身仅提取了光场协方差矩阵的对角结构，未利用高阶矩所携带的相位与稀疏性信息。"
+    },
+    {
+      "type": "p",
+      "text": "换一个视角，鬼成像可被严格建模为带正性约束的线性不适定逆问题。设照明模式 $S_i(x) \\in \\mathbb{R}_+$ 由空间光调制器（SLM）可控生成，待恢复物体 $T(x) \\in \\mathbb{R}_+$，则桶探测器读数满足："
+    },
+    {
+      "type": "math",
+      "latex": "b_i = \\int_{\\Omega} S_i(x)\\,T(x)\\,dx + \\epsilon_i, \\quad A_{ix} = S_i(x), \\quad y = Ax + \\epsilon, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $A \\in \\mathbb{R}^{N \\times N_x}$ 即为测量矩阵，每一行是一次结构化照明模式。由于 $N \\ll N_x$ 在欠采样条件下普遍存在，方程组 (1) 在最小二乘意义下严重欠定。然而，若 $T$ 在某字典 $\\Psi$（小波、Curvelet、TV 梯度等）下具有稀疏表示 $T = \\Psi \\theta$，$\\|\\theta\\|_0 = s \\ll N$，则压缩感知框架可被严格应用。"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{\\theta \\ge 0}\\;\\tfrac{1}{2}\\|A\\Psi\\theta - b\\|^2 + \\lambda\\,\\|\\theta\\|_1, \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "我们建立恢复性的非渐近理论。设 $A$ 由独立同分布的次高斯随机模式生成（物理上由旋转毛玻璃或 DMD 伪随机图样实现），其与字典 $\\Psi$ 的复合矩阵 $\\Phi = A\\Psi$ 满足 $\\Phi$ 的限制等距性质（RIP）："
+    },
+    {
+      "type": "math",
+      "latex": "(1 - \\delta_s)\\,\\|\\theta\\|_2^2 \\le \\|\\Phi\\theta\\|_2^2 \\le (1 + \\delta_s)\\,\\|\\theta\\|_2^2, \\quad \\forall \\,\\|\\theta\\|_0 \\le s, \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "在 $\\delta_{2s} < \\sqrt{2} - 1$ 的条件下，问题 (2) 的解 $\\hat\\theta$ 满足 $\\|\\hat\\theta - \\theta^\\dagger\\|_2 \\le C\\,s^{1/2}\\,\\lambda^{-1}\\,\\sigma$，其中 $\\sigma^2 = \\mathbb{E}\\|\\epsilon\\|^2$。关键在于：相比相关法的 $N^{-1/2}$ 误差率，$\\ell_1$ 正则化在 $N \\asymp s \\log(N_x/s)$ 时即可达到饱和收敛，突破瑞利衍射极限所需的每像素独立测量假设，其代价是必须在测量端引入可控的光学调制（如 Hadamard、Noiselet 编码）以保证 $\\Phi$ 的相干性下界。"
+    },
+    {
+      "type": "p",
+      "text": "算法层面，模型 (2) 是一个非负 $\\ell_1$ 问题，可用 ADMM 或 LASSO 型的近端梯度法（ISTA/FISTA）求解。对应到鬼成像流程，"
+    },
+    {
+      "type": "math",
+      "latex": "\\theta^{k+1} = \\mathrm{prox}_{\\lambda/\\tau\\,\\|\\cdot\\|_1}\\!\\bigl(\\theta^k - \\tau\\,\\Psi^\\top A^\\top(A\\Psi\\theta^k - b)\\bigr), \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathrm{prox}_{\\lambda/\\tau\\,\\|\\cdot\\|_1}$ 是软阈值算子。该框架将鬼成像的分辨率从探测器衍射极限 $\\Delta x_{\\mathrm{diff}}$ 提升到由 $N$ 与稀疏度 $s$ 决定的统计极限 $\\Delta x_{\\mathrm{CS}} \\sim \\sqrt{N_x/N}\\cdot \\Delta x_{\\mathrm{diff}}$，从根本上改变了散斑数决定分辨率的传统认知。在 X 射线鬼成像、单光子量子层析、压缩超快光谱等场景中，该范式已被实验证实可将剂量降低一个数量级而保持图像保真度。"
+    }
+  ]
+}

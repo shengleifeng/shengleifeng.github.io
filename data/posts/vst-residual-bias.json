@@ -1,0 +1,52 @@
+{
+  "id": "vst-residual-bias",
+  "title": "弱光照下的泊松反卷积：Anscombe 与 VST 之后的残留偏差正则化",
+  "date": "2025-05-17",
+  "tags": [
+    "计算成像",
+    "泊松",
+    "VST"
+  ],
+  "abstract": "直接在泊松域用加权 ℓ₂ 保真项加 TV 正则化，TV 阈值随信号水平自动缩放产生自然信号依赖正则化。",
+  "body": [
+    {
+      "type": "p",
+      "text": "在弱光照条件下成像（如天文观测、单分子荧光显微镜、低光医学成像），传感器读出 $y \\in \\mathbb{N}$ 服从泊松分布 $y \\sim \\mathrm{Poisson}(\\lambda)$，其中 $\\lambda = H u$ 携带了真实图像 $u$ 经光学模糊 $H$ 后的强度信息。泊松反卷积的目标是从 $y$ 恢复 $u$，但与高斯噪声情况不同，泊松噪声的方差 $\\mathrm{Var}(y) = \\lambda$ 严格依赖于信号本身，这使得误差度量、最优估计和正则化强度都需作信号依赖的精细调整。Anscombe 方差稳定化变换（VST） $z = 2\\sqrt{y + 3/8}$ 长期被视为该问题的标准预处理手段：它将泊松分布渐近地映射为方差为 1 的高斯分布，从而允许直接使用 $\\ell_2$ 框架。然而，本文将论证：在反卷积这一涉及算子求逆的不适定问题中，VST 的近似高斯性会引入残留偏差，其根源在于 $H$ 的非各向同性放大作用会在不同信号水平上引入异方差性的反演误差。"
+    },
+    {
+      "type": "p",
+      "text": "具体而言，VST 的渐近高斯近似 $z \\sim \\mathcal{N}(\\sqrt{\\lambda}, 1/4)$ 仅在 $\\lambda$ 足够大（$\\lambda \\gtrsim 10$）时有效。在低光区域，$y = 0$ 或 $y = 1$ 的概率非平凡，Anscombe 变换后的 $z$ 仍带有强烈的离散性；更重要的是，反变换 $\\hat{y} = (z/2)^2 - 3/8$ 是一个非线性映射，会将 VST 域的高斯反演误差 $\\delta z$ 转化为泊松域的乘性偏差 $\\delta y \\approx 2 z \\delta z$，该偏差在高信号区域被放大、低信号区域被压缩。鉴于此，本文主张直接回到泊松域进行反演，绕开 VST 的双向往返损失。"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{u \\ge 0} \\, \\mathcal{D}_{\\mathrm{KL}}(H u, y) + \\alpha \\, \\mathrm{TV}(u) = \\sum_i \\left[ H u \\right]_i - y_i \\log[H u]_i + \\alpha \\, \\mathrm{TV}(u) \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "公式 (1) 给出了泊松反卷积的最大后验（MAP）估计目标，其中保真项 $\\mathcal{D}_{\\mathrm{KL}}(H u, y) = \\sum_i (H u)_i - y_i \\log(H u)_i$ 是泊松负对数似然（即 Kullback-Leibler 散度），正则项 $\\mathrm{TV}(u)$ 强制图像的稀疏梯度。我们证明该泛函在 $u > 0$ 上的 Euler-Lagrange 方程为 $H^\\top (1 - y / (H u)) + \\alpha \\, \\mathrm{div}(\\nabla u / |\\nabla u|) = 0$，其形式上等价于一个加权 $\\ell_2$ 问题的非线性化推广：令 $W = \\mathrm{diag}(1 / (H u))$，则方程可写为 $H^\\top W H (u - u^\\ast) = -\\alpha \\, \\mathrm{div}(\\nabla u / |\\nabla u|)$，其中 $W$ 自身依赖于 $u$，这就是非线性 Landweber 类型的加权迭代。"
+    },
+    {
+      "type": "math",
+      "latex": "u^{(k+1)} = \\mathrm{prox}^{\\alpha\\,\\mathrm{TV} / \\beta}\\!\\left( u^{(k)} - \\beta H^\\top \\left( 1 - \\frac{y}{H u^{(k)}} \\right) \\right), \\quad \\beta \\in (0, 2/\\|H^\\top H\\|) \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "我们采用原始-对偶分裂 (Chambolle-Pock 算法) 求解 (1)。每一步对偶上升更新对偶变量 $p$（对应图像梯度），原始下降更新 $u$，其中数据保真项的梯度为 $H^\\top (1 - y / (H u))$，在 $H u$ 接近零时该梯度会趋于 $-\\infty$，因此需引入 $u \\ge \\epsilon > 0$ 的安全约束。我们证明：在步长 $\\beta < 2/\\|H^\\top H\\|$ 条件下，迭代 (2) 收敛到 (1) 的全局最优解，因为 KL 散度在 $u > 0$ 上是严格凸函数。"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{Var}(\\hat{u} - u^\\dagger) \\approx \\mathrm{diag}\\!\\left( \\frac{1}{H u^\\dagger} \\right) \\, H^\\top H \\, \\sigma_\\eta^2 \\Rightarrow \\alpha_{\\mathrm{local}}(x) \\propto \\frac{1}{\\sqrt{H u^\\dagger(x)}} \\tag{3}",
+      "display": false
+    },
+    {
+      "type": "p",
+      "text": "公式 (3) 是本文的核心理论洞察：在泊松域的 TV 正则化中，\"有效正则化强度\"会随局部信号水平 $H u(x)$ 自适应变化。在暗部 ($H u(x) \\to 0$)，方差 $1/H u(x)$ 发散，因此等效 $\\alpha_{\\mathrm{local}}(x) \\to \\infty$，即暗部被强烈平滑以压制噪声；在亮部 ($H u(x)$ 大)，方差较小，$\\alpha_{\\mathrm{local}}(x) \\to 0$，正则化松弛，细节得以保留。这一信号依赖的\"自适应平滑\"性质是泊松域直接反演的天然副产品，无需任何手工设计即可实现，这与 VST 域反演后再反变换得到的恒定 $\\alpha$ 形成鲜明对比。"
+    },
+    {
+      "type": "p",
+      "text": "本文的结论凝练为如下命题：在泊松域直接执行 TV 正则化反演，比 VST 预处理路线具有更优的偏差-方差权衡，其内禀的信号依赖正则化机制使暗部平滑、亮部保持细节。本文还进一步指出，泊松负对数似然的 Bregman 距离 $D_p^q(u, v) = \\sum_i (u_i - v_i - v_i \\log(u_i / v_i))$ 可作为更精细的非对称误差度量，用于替代 (1) 中的对称 KL 散度以应对极端低光子数。展望未来，我们认为这一思路可推广至泊松-Beta 混合噪声模型（适用于 EMCCD 相机），并结合泊松生成式先验（如泊松 UNet）构建可解释的端到端弱光成像反演框架。"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "blind-deconv-hybrid",
+  "title": "混合型不适定逆问题：部分已知算子的盲反卷积与变分分离",
+  "date": "2025-03-01",
+  "tags": [
+    "计算成像",
+    "盲反卷积",
+    "正则化"
+  ],
+  "abstract": "核用 H¹ 半范数惩罚光滑性，图像用 TV 惩罚分段常数，两阶段核修正策略稳定小初始误差下线性收敛。",
+  "body": [
+    {
+      "type": "p",
+      "text": "盲反卷积 (Blind Deconvolution) 是计算成像中的核心不适定逆问题, 旨在同时恢复模糊核 $k \\in \\mathcal{K}$ 与清晰图像 $x \\in X$, 其前向模型为卷积积分 $y(s) = (k * x)(s) + \\varepsilon(s)$。该问题本质上是双线性 (bilinear) 的不适定反问题, 即便已知算子 $k$, 单图像反卷积本身已是严重病态, 因此联合估计两个未知量呈现出更严峻的\"病态乘积\"。"
+    },
+    {
+      "type": "p",
+      "text": "我们考虑部分已知算子 (partially known operator) 的设定, 这是工程实践中常见的情形: 例如, 在相机抖动模糊中, 核的支撑域 (PSF 大小) 已知; 在显微成像中, 核的物理对称性 (圆对称) 已知; 在波前编码系统中, 核的三阶相位系数已知。这类先验虽不能完全确定 $k$, 但足以将其参数化空间从无限维降到有限维, 极大改善了反问题的可解性:"
+    },
+    {
+      "type": "math",
+      "latex": "y(s) = \\int_\\Omega k(s - t)\\, x(t)\\,dt + \\varepsilon(s), \\quad k \\in \\mathcal{K} \\subset \\mathcal{S}(\\mathbb{R}^d), \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathcal{K}$ 是由先验约束的可行核集, 例如 $\\mathcal{K} = \\{k : \\mathrm{supp}(k) \\subseteq \\Omega_0, k \\ge 0, \\|k\\|_1 = 1, k \\text{ 满足 } R(k) = r_0\\}$。将盲反卷积建模为带不等式约束的非凸变分问题:"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{k \\in \\mathcal{K}, x}\\,\\tfrac{1}{2}\\|k * x - y\\|^2 + \\alpha\\,\\|\\nabla k\\|^2_{H^1} + \\beta\\,\\mathrm{TV}(x) + \\iota_{\\mathcal{K}}(k), \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\alpha\\,\\|\\nabla k\\|^2_{H^1} = \\alpha \\|\\nabla k\\|_{L^2}^2$ 是核的 $H^1$ 半范数惩罚, 鼓励核光滑; $\\beta\\,\\mathrm{TV}(x) = \\beta \\int |\\nabla x|$ 是图像的全变差半范数, 鼓励分段常数; $\\iota_{\\mathcal{K}}(k)$ 是集合 $\\mathcal{K}$ 的指示函数。这一组合利用了自然图像与模糊核的多尺度分离特性: 模糊核通常对应光学或运动学机制, 具有低带宽、平滑的特征; 而自然图像则在分段常数 (卡通) 与纹理两种成分间分配能量。"
+    },
+    {
+      "type": "p",
+      "text": "算法层面, 我们提出两阶段核修正策略 (TSKC): 第一阶段固定 $k$ 的初值 (例如由频谱比方法得到), 通过 Chambolle-Pock 原始-对偶算法求解 $x$; 第二阶段固定 $x$, 通过近端梯度法更新 $k$ 并投影回 $\\mathcal{K}$:"
+    },
+    {
+      "type": "math",
+      "latex": "k^{n+1} = \\mathcal{P}_\\mathcal{K}\\bigl( k^n - \\gamma_n \\nabla_k \\bigl[\\tfrac{1}{2}\\|k * x - y\\|^2 + \\alpha\\,\\|\\nabla k\\|^2\\bigr] \\bigr), \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathcal{P}_\\mathcal{K}$ 是 $\\mathcal{K}$ 上的投影 (例如非负性、归一化、支撑约束), $\\gamma_n$ 是步长。该算法在 $\\mathcal{K}$ 是凸集时保持凸性, 保证了数值稳定性。定理 (小初始误差下的线性收敛): 设真实核 $k^\\dagger \\in \\mathrm{int}(\\mathcal{K})$, 真实图像 $x^\\dagger$ 满足 $\\|x^\\dagger\\|_{\\mathrm{BV}} \\le M$, 初始估计满足 $\\|k^0 - k^\\dagger\\| \\le \\varepsilon_0$, $\\|x^0 - x^\\dagger\\| \\le \\varepsilon_0$, 其中 $\\varepsilon_0$ 充分小, 则上述两阶段算法以 $O(\\rho^n)$ 的几何速率线性收敛到 $k^\\dagger, x^\\dagger$ 的邻域内, 其中 $\\rho < 1$ 取决于 $k^\\dagger$ 的非退化性条件 $\\sigma_{\\min}(H_k) > 0$。"
+    },
+    {
+      "type": "p",
+      "text": "讨论: 本文方法相比传统盲反卷积的核心优势在于: (i) 部分已知算子的先验将无限维的 $k$ 空间降到有限维, 使问题从原则上的不可辨识变得局部可辨识; (ii) $H^1$ 核正则化与 TV 图像正则化在多尺度上是兼容的, 不像 L1 + L2 等组合可能在某些尺度上冲突; (iii) 两阶段核修正在实践中对初值鲁棒; (iv) 收敛性分析在 $\\mathcal{K}$ 凸性的假设下是严格的, 比 Youla-Kaviani 等基于变分贝叶斯的黑箱方法更具理论保证。展望未来, 该框架可推广至盲源分离 (BSS) 中的部分已知混合矩阵、盲反卷积神经网络的物理一致性约束、计算光学中的相位恢复 (即同时估计 PSF 与高动态范围目标), 以及在多模态融合中联合估计配准矩阵与图像内容。"
+    }
+  ]
+}

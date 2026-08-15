@@ -1,0 +1,56 @@
+{
+  "id": "traveltime-fwi",
+  "title": "地震层析成像中的走时反演与全波形联合：正则化驱动的多尺度自适应",
+  "date": "2025-04-12",
+  "tags": [
+    "计算成像",
+    "微分方程",
+    "FWI"
+  ],
+  "abstract": "走时反演解作为全波形反演的空间可变 Tikhonov 中心，局部分辨率估计加权正则化项。",
+  "body": [
+    {
+      "type": "p",
+      "text": "地震层析成像的核心任务是从地表记录的波形数据反推地下介质的速度场 $c(x)$。走时反演 (Traveltime Tomography, TT) 稳健但分辨率有限; 全波形反演 (Full Waveform Inversion, FWI) 在理论上能获得波长级分辨率, 但由于波动方程的非线性以及损失景观的多峰性, 在缺乏良好初值时极易陷入局部极小, 导致周波跳跃 (cycle-skipping) 现象。"
+    },
+    {
+      "type": "p",
+      "text": "我们将这两类方法置于统一的变分框架下。设 $A(c)$ 为波动方程的解算子 (具体地, 对 Helmholtz 方程 $(c^2 \\Delta + \\omega^2) u = f$ 求解), 则 FWI 目标函数为 $J_{\\mathrm{FWI}}(c) = \\tfrac{1}{2}\\|A(c) - d\\|^2$。本文的核心思想是引入走时反演解 $c_{\\mathrm{TT}}(x)$ 作为参考中心, 将 FWI 改造为相对于该中心的空间可变 Tikhonov 正则化:"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{c}\\,J(c) := \\tfrac{1}{2}\\|A(c) u(c) - d\\|^2 + \\tfrac{1}{2}\\|c - c_{\\mathrm{TT}}\\|^2_{C_{\\mathrm{TT}}^{-1}}, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $C_{\\mathrm{TT}}$ 是走时反演解的协方差算子, 由射线密度矩阵 $\\Sigma(x) = \\int_{\\mathrm{rays}} \\delta(x - \\gamma(s))\\,ds$ 及其逆问题正规化矩阵联合决定。该二次惩罚项在物理上等价于将 $c$ 拉向走时反演所能保证的低频结构, 同时允许 FWI 在其不确定度内自由恢复细节。"
+    },
+    {
+      "type": "p",
+      "text": "走时反演解的协方差可由线性化高斯-牛顿法显式构造: 设 $T_i(c) = \\int_{\\gamma_i} c^{-1}(s)\\,ds$ 为第 $i$ 条射线的走时, $L_{ij} = \\partial T_i / \\partial c(x_j)$ 为灵敏度矩阵, 则 $C_{\\mathrm{TT}} = (L^\\top L)^{-1}$, 其迹的局部估计 $\\tau(x) = \\mathrm{trace}(C_{\\mathrm{TT}}(x))$ 即为该点的局部分辨率指标。我们据此设计空间自适应正则化矩阵:"
+    },
+    {
+      "type": "math",
+      "latex": "C_{\\mathrm{TT}}^{-1}(x) = \\lambda\\,\\mathrm{diag}\\bigl(R(x)\\bigr), \\quad R(x) = \\tfrac{1}{\\sqrt{\\tau(x) + \\varepsilon}}, \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $R(x)$ 是空间可变的分辨率权重: 在射线覆盖密集、走时反演可靠的区域, $\\tau$ 较小, $R$ 较大, 正则化放松; 在射线稀疏、不确定的区域, $R$ 自动减小, 强制 $c$ 紧靠走时反演中心, 避免波形反演过度信任数据。"
+    },
+    {
+      "type": "math",
+      "latex": "\\lambda_m = \\lambda_0 \\cdot \\rho^m, \\quad \\rho \\in (0.5, 0.9), \\quad m = 0, 1, \\ldots, M, \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "算法层面, 我们将 FWI 与多尺度策略 (频率扫描、空间金字塔) 耦合, 在第 $m$ 个尺度上, 设低通滤波算子为 $\\mathcal{F}_m$, 则 $c_{\\mathrm{TT}}^{(m)} = \\mathcal{F}_m(c_{\\mathrm{TT}})$ 同时被用作该尺度的参考模型, 而 $\\lambda_m$ 随尺度细化而指数递减, 形成对正则化参数 $\\lambda$ 的尺度同伦, 在粗尺度上以大 $\\lambda$ 抑制周波跳跃, 在细尺度上以小 $\\lambda$ 恢复细节。定理 (后验误差界): 上述联合反演的解 $c^\\ast$ 满足 $\\|c^\\ast - c^\\dagger\\| \\le C\\,\\eta^{2\\mu / (2\\mu + 1)}$, 显著优于纯 FWI 的局部收敛 $\\|\\nabla c^\\dagger - \\nabla c^\\ast\\| \\le C\\,\\eta^{1/2}$。"
+    },
+    {
+      "type": "p",
+      "text": "讨论: 本方法与传统的 Tikhonov 正则化 ($\\|c - c_0\\|^2$, 对应常数协方差 $C^{-1} = \\lambda I$) 有本质区别: 后者隐含 $c_{\\mathrm{TT}}$ 全域均匀可靠的错误假设, 而空间可变 $C_{\\mathrm{TT}}$ 将\"我们对先验有多大把握\"这一先验知识本身编码进了正则化结构, 是对反问题不适定性的精细化处理。展望未来, 该框架可自然扩展至 4D-EnVar, 将时序走时反演的协方差序列作为 4D-Var 的背景误差矩阵, 实现时间维度的多尺度自适应。"
+    }
+  ]
+}

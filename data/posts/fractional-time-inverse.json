@@ -1,0 +1,61 @@
+{
+  "id": "fractional-time-inverse",
+  "title": "分数阶微分方程反问题的奇异性：对时间正则化的非局部挑战",
+  "date": "2026-03-07",
+  "tags": [
+    "微分方程",
+    "分数阶",
+    "不适定逆问题"
+  ],
+  "abstract": "揭示时间分数阶导数的长记忆核如何使反问题退化为反卷积，并提出 Mittag-Leffler 预条件。",
+  "body": [
+    {
+      "type": "p",
+      "text": "在反常扩散、粘弹性介质或多孔介质流的参数反演中，时间分数阶导数 $\\partial_t^\\alpha$（$0 < \\alpha < 1$，Caputo 意义下）取代了一阶时间导数。其解算子由 Mittag-Leffler 函数主导，呈现长记忆、慢衰减的幂律行为："
+    },
+    {
+      "type": "math",
+      "latex": "E_{\\alpha,\\beta}(z) = \\sum_{k=0}^{\\infty}\\frac{z^k}{\\Gamma(\\alpha k + \\beta)}, \\quad u(t) = t^{\\beta-1} E_{\\alpha,\\beta}(-\\lambda t^\\alpha). \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "这一函数在 $t \\to \\infty$ 时按 $t^{-\\alpha}$ 衰减，远慢于整数阶扩散的指数衰减。物理上反映了系统的非马尔可夫性：当前状态依赖于整个历史而非瞬时梯度。这一非局部性在正问题中是良性的——只需在数值格式中用 Grünwald-Letnikov 离散即可近似；但在反问题中，长记忆核将正问题的时间卷积结构转化为严重不适定的反卷积。"
+    },
+    {
+      "type": "p",
+      "text": "当反演源项 $f(t)$ 时，前向模型为："
+    },
+    {
+      "type": "math",
+      "latex": "u(t) = (K * f)(t) := \\int_0^t K(t-s)\\,f(s)\\,ds, \\quad K(\\tau) = \\tau^{\\alpha-1}\\,\\sum_{k\\ge 0}\\,\\frac{(-a\\tau^\\alpha)^k}{\\Gamma(\\alpha k + \\alpha)}. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "卷积核 $K$ 在 $\\tau \\to \\infty$ 时的渐近行为 $K(\\tau) \\sim c\\,\\tau^{\\alpha-1}$ 直接决定了反卷积的病态程度。对该核做 Laplace 变换后，$\\hat K(s) = s^{-\\alpha} / (1 + a\\,s^{-\\alpha})$ 在 $s \\to 0$ 处按 $s^{-\\alpha}$ 发散，导致 $\\|K^{-1}\\|$ 随观测时间窗口 $T$ 呈 $T^{\\alpha}$ 阶的不稳定增长。这是 Tikhonov 正则化在此场景下系统性失效的频域根源：标准 $L^2$ 罚项在所有频段施加均匀的平滑，与核在低频端的非局部性严重不匹配。"
+    },
+    {
+      "type": "p",
+      "text": "我们提出 Mittag-Leffler 预条件正则化策略。定义 Mittag-Leffler 微分算子 $D_\\alpha f(t) := \\frac{d}{dt}\\int_0^t (t-s)^{\\alpha-1} E_{\\alpha,\\alpha}(-a(t-s)^\\alpha)\\,f(s)\\,ds$，可验证 $K = D_\\alpha^{-1}$。令 $\\tilde f = D_\\alpha f$，则反卷积被化为局部算子："
+    },
+    {
+      "type": "math",
+      "latex": "u(t) = \\int_0^t \\tilde K(t-s)\\,\\tilde f(s)\\,ds, \\quad \\tilde K(\\tau) = E_{\\alpha,1}(-a\\tau^\\alpha)\\, \\mathbf{1}_{\\tau \\ge 0}. \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\tilde K$ 是 $L^1$ 核（$|\\tilde K| \\le C/(1+|\\tau|^\\alpha)$），具备局部紧支集的特征，从而 $\\tilde K$ 的条件数在有限时间窗下可控。在 $\\tilde f$ 空间施加 Tikhonov 正则化："
+    },
+    {
+      "type": "math",
+      "latex": "\\tilde f_\\alpha^\\delta = \\arg\\min_{\\tilde f}\\;\\tfrac{1}{2}\\|\\tilde K \\tilde f - u^\\delta\\|^2_{L^2(0,T)} + \\beta\\,\\|\\tilde f\\|^2_{H^s(0,T)}, \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "在源条件 $\\tilde f^\\dagger \\in H^p$ 下，可证明收敛率 $\\|f_\\alpha^\\delta - f^\\dagger\\|_{L^2} = \\mathcal{O}(\\delta^{p/(p+1)})$。其关键在于：$D_\\alpha$ 的引入将不适定性从核 $K$ 转移到解 $\\tilde f$ 的空间结构上，使得正则化子的频域特征与数据的频谱分布相匹配。结合分数阶 Sobolev 空间 $H^s$ 的非局部基函数，我们获得了对长记忆反卷积的结构感知正则化能力，是经典 Tikhonov 与 TV 之外的第三条路径。"
+    }
+  ]
+}

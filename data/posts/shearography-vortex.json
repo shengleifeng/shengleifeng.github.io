@@ -1,0 +1,52 @@
+{
+  "id": "shearography-vortex",
+  "title": "斑纹干涉术的去噪与正则化：相位奇异点保留的变分模型",
+  "date": "2025-07-26",
+  "tags": [
+    "计算成像",
+    "相位恢复",
+    "拓扑保护"
+  ],
+  "abstract": "联合优化相位主值和条纹方向，惩罚梯度旋转部分免惩罚，仅平滑其无旋部分。",
+  "body": [
+    {
+      "type": "p",
+      "text": "电子散斑干涉术 (Electronic Speckle Pattern Interferometry, ESPI) 与剪切散斑干涉术 (Shearography) 通过测量相移光场重建试件表面的相位 $\\phi(x)$，其在裂纹、疲劳和蜂窝缺陷检测中具有亚波长灵敏度。然而干涉条纹的相位图含有相位奇异点 (vortex)，其拓扑荷 $\\tfrac{1}{2\\pi}\\oint \\nabla\\phi\\cdot d\\ell \\in \\mathbb{Z}$ 携带了关于缺陷位置的关键信息。标准的 TV 或 Tikhonov 平滑会破坏该整数拓扑荷，导致缺陷位置的不连续丢失。本文设计一种保拓扑的非光滑变分模型，将涡旋位置编码为对偶变量的旋度源，实现降噪与拓扑保护的兼容。"
+    },
+    {
+      "type": "p",
+      "text": "我们将剪切干涉图建模为 $y(x) = a(x) + b(x)\\cos(\\phi(x) + n(x))$，其中 $n$ 为乘性散斑噪声，相位 $\\phi$ 沿涡旋点 $x_i$ 处有 $\\pm 2\\pi$ 的整数跳变。直接对 $\\phi$ 做平滑会\"削平\"这些整数跳变，破坏拓扑荷。我们引入分解 $\\phi = u + c$，其中 $u \\in C^1$ 为光滑分量，$c$ 为由涡旋 $\\{x_i\\}$ 决定的奇异分量 (current)，并对 $u$ 施加方向敏感的各向异性 TV。"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{u,\\,\\{x_i\\}}\\;\\tfrac{1}{2}\\|\\cos(u + c_{\\{x_i\\}}) - y\\|^2 + \\alpha\\int |\\nabla u_\\perp|^2\\,dx, \\quad \\nabla u_\\perp = \\nabla u - (\\nabla u\\cdot \\hat{e})\\,\\hat{e}. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (1) 中 $\\hat{e}$ 为由条纹局部结构张量估计的条纹方向，$\\nabla u_\\perp$ 为垂直于条纹的梯度分量。命题 1 (方向选择性平滑): 沿条纹切向 $\\hat{e}$ 不施加惩罚，相当于令 $\\alpha_\\parallel = 0, \\alpha_\\perp = \\alpha$ 的各向异性 TV。该选择使得涡旋的环量积分 $\\oint \\nabla u_\\perp \\cdot d\\ell = 0$ 在每条绕过涡旋的闭合曲线上保持为零，从而整数拓扑荷被精确保持。"
+    },
+    {
+      "type": "math",
+      "latex": "\\tfrac{1}{2\\pi}\\oint_{\\partial B_\\epsilon(x_i)} \\nabla u_\\perp \\cdot d\\ell = 0, \\quad \\forall i, \\,\\epsilon > 0, \\quad \\Rightarrow \\quad \\sum_i q_i = 0 \\text{ in } \\Omega. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (2) 的拓扑守恒律是变分模型的内禀性质，无需显式约束。我们进一步将涡旋检测作为模型的副产品：对偶变量 $p$ 在迭代过程中自然出现 Dirac 旋度源 $p(x) = \\sum_i q_i\\,\\delta(x - x_i)$，其支撑点即涡旋位置，权重即拓扑荷。算法上采用 Chambolle-Pock 原始-对偶分裂，每步在 $p$ 上做 $\\ell_\\infty$ 投影以保持旋度的整数量子化。"
+    },
+    {
+      "type": "math",
+      "latex": "0 \\in A^\\ast(\\cos(u + c) - y) + \\alpha\\,\\partial\\|\\nabla u_\\perp\\|_1, \\quad p^{k+1} = \\Pi_{\\ell_\\infty}(p^k + \\sigma\\,\\nabla u_\\perp^k), \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (3) 给出了 Chambolle-Pock 迭代的鞍点条件与对偶更新规则。$\\Pi_{\\ell_\\infty}$ 为 $\\ell_\\infty$ 球面投影，保证对偶变量的旋度源结构在迭代中保持 $\\delta$ 测度的形式。讨论: 与传统去噪方法 (Goldstein 枝切、单纯 TV) 相比，本模型的优势在于 (i) 不需要先验估计涡旋数量，由数据驱动自动涌现；(ii) 平滑与拓扑保护在同一变分框架内耦合，避免了两阶段方法中的信息损失；(iii) 适用于密集涡旋场（拓扑荷密度 $>1/\\text{mm}^2$）的高分辨率剪切图。其代价是对条纹方向 $\\hat{e}$ 的估计精度敏感，需用结构张量做多尺度方向估计。"
+    },
+    {
+      "type": "p",
+      "text": "结论: 变分模型通过将拓扑守恒律编码为对偶变量的旋度源结构张量，在降噪同时精确保持相位奇异点的整数拓扑荷。该思路可推广至极化相位场、光学涡旋 (orbital angular momentum) 反演与液晶缺陷的拓扑表征。未来工作将探索将模型推广至时域剪切图序列，利用涡旋轨迹的连续性约束作为额外的时序正则化；以及与深度生成先验结合，从剪切图反演试件三维面内位移场的全场力学反演。"
+    }
+  ]
+}

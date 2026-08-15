@@ -1,0 +1,65 @@
+{
+  "id": "wirtinger-phase-retrieval",
+  "title": "不可求导算子的逆：相位恢复的 Wirtinger 流及鞍点逃逸",
+  "date": "2026-03-21",
+  "tags": [
+    "不适定逆问题",
+    "相位恢复",
+    "Wirtinger"
+  ],
+  "abstract": "分析相位恢复目标函数的非凸景观与鞍点结构，提出扰动式正则化逃逸机制。",
+  "body": [
+    {
+      "type": "p",
+      "text": "相位恢复问题在于仅观测复向量 $z \\in \\mathbb{C}^n$ 的 Fourier 幅度 $|\\hat z_k|^2$，丢失了相位信息。最小二乘重建表述为："
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{z \\in \\mathbb{C}^n}\\;\\mathcal{L}(z) = \\tfrac{1}{2}\\sum_{k=1}^m \\bigl(|\\langle a_k, z\\rangle|^2 - y_k\\bigr)^2. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "目标函数关于 $z$ 是非凸的，且 $z \\mapsto |\\langle a, z\\rangle|^2$ 不满足 Cauchy-Riemann 方程，因此复梯度 $\\partial \\mathcal{L}/\\partial z$ 不存在。但 Wirtinger 微积分为我们提供了解析的便捷工具：将 $z$ 与 $\\bar z$ 视作独立变量并仅对 $z$ 求导，得到"
+    },
+    {
+      "type": "math",
+      "latex": "\\frac{\\partial \\mathcal{L}}{\\partial \\bar z} = \\sum_{k=1}^m \\bigl(|\\langle a_k, z\\rangle|^2 - y_k\\bigr)\\, a_k \\bar a_k^\\top z, \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "此梯度公式简洁优美，但其代价是优化景观中分布着大量严格鞍点。Sun-Luo-Zhao 的景观分析证明：在高维情况下，索引为 $\\mathrm{ind}(x) := n - \\mathrm{rank}(\\nabla^2 \\mathcal{L}(x))$ 的临界点中，几乎所有都是鞍点；全局极小值的稳定流形（basin of attraction）相对全空间测度的占比为 $O(n^{-c})$。这意味着，朴素的 Wirtinger 梯度下降以接近 $1$ 的概率被困。"
+    },
+    {
+      "type": "p",
+      "text": "鞍点逃逸机制的设计需要兼顾收敛速度与几何扰动。两种主流方案如下。其一，加性扰动（perturbed gradient descent, PGD）："
+    },
+    {
+      "type": "math",
+      "latex": "z^{k+1} = z^k - \\eta_k \\nabla \\mathcal{L}(z^k) + \\sigma_k\\, \\xi_k, \\quad \\xi_k \\sim \\mathcal{CN}(0, I), \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中扰动尺度 $\\sigma_k$ 按 $k^{-\\gamma}$ 衰减（$\\gamma \\in (0, 1/2]$），使算法在初始阶段充分探索流形、跨过鞍点，在后期稳定收敛到全局极小附近的极小值。Lee-Simchowitz-Jordan 证明，对一般非凸优化，扰动梯度下降在多项式迭代次数内以高概率找到 $\\epsilon$-次优解。"
+    },
+    {
+      "type": "p",
+      "text": "其二，曲率修正（trust-region / cubic regularization）："
+    },
+    {
+      "type": "math",
+      "latex": "z^{k+1} = \\arg\\min_{z}\\;\\langle \\nabla\\mathcal{L}(z^k), z - z^k\\rangle + \\tfrac{1}{2}\\,\\mathrm{Hess}\\,\\mathcal{L}(z^k)[z - z^k, z - z^k] + \\tfrac{M}{6}\\,\\|z - z^k\\|^3. \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "三阶正则项 $M\\|z\\|^3/6$ 引入了显式的非局部曲率信息，使得 Hessian 的负曲率方向被衰减，从而避免在鞍点附近线性化搜索的失效。该方法在二阶优化的角度下可以视为对信赖域半径的隐式控制，与自适应正则化框架（如 ARC）紧密相关。"
+    },
+    {
+      "type": "p",
+      "text": "我们认为，PDE 约束反演的视角为上述逃逸机制提供了统一的正则化解读：PDE 残差 $\\|\\mathcal{R}(z)\\|$ 作为损失函数中的软约束，其 Hessian 的特征结构编码了哪些方向是数据约束下的危险鞍点。对不适定反问题，加性扰动 $\\sigma_k$ 的方差与残差 Hessian 的最小特征值 $\\lambda_{\\min}(\\mathrm{Hess}\\,\\mathcal{L})$ 成反比，从而将逃离鞍点所需的扰动尺度与数据的局部曲率显式挂钩，避免了盲调超参数。"
+    }
+  ]
+}

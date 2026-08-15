@@ -1,0 +1,56 @@
+{
+  "id": "lsq-phase-transition",
+  "title": "最小二乘逆问题的稳定性阈值：随机矩阵理论的相变分析",
+  "date": "2025-07-19",
+  "tags": [
+    "不适定逆问题",
+    "随机矩阵",
+    "相变"
+  ],
+  "abstract": "通过 Marchenko-Pastur 与尖峰模型导出稳定性相变阈值，证明 PCR 正则化可推后该阈值。",
+  "body": [
+    {
+      "type": "p",
+      "text": "当测量矩阵 $A \\in \\mathbb{R}^{m \\times n}$ 具有独立同分布的亚高斯条目时，最小二乘解 $\\hat x = A^+ y$（伪逆解）展现出一种由随机矩阵理论预言的尖锐\"相变\"现象：在信噪比 (SNR) 低于某临界值时，重建误差 $\\|\\hat x - x^\\dagger\\|$ 突然从接近噪声水平爆炸式增长至 $\\mathcal{O}(1)$。这一现象完全不同于经典 Tikhonov 正则化的渐近误差增长，是高维反问题特有的\"维数灾难\"相变。"
+    },
+    {
+      "type": "p",
+      "text": "本文借助 Marchenko-Pastur 定律与尖峰模型 (spike model) 严格刻画该相变阈值。具体地，设 $A$ 的奇异值分布收敛到 MP 律 $d\\mu_\\beta = (1-\\beta)_+\\,\\delta_0 + \\frac{\\sqrt{(\\lambda_+ - \\lambda)(\\lambda - \\lambda_-)}}{2\\pi\\lambda\\,\\beta}\\,d\\lambda$，其中 $\\lambda_\\pm = (1 \\pm \\sqrt{\\beta})^2$，$\\beta = n/m$。当 $x^\\dagger$ 为\"尖峰\"信号（与 $A$ 的左奇异向量有非平凡内积）时，伪逆解的渐近误差满足"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{SNR}_\\mathrm{crit}(\\beta) = (1 + \\sqrt{\\beta})^2 - 1, \\quad \\|\\hat x - x^\\dagger\\|_2 \\sim \\frac{\\sigma_\\epsilon}{\\mathrm{SNR} - \\mathrm{SNR}_\\mathrm{crit}} \\quad \\text{当 } \\mathrm{SNR} > \\mathrm{SNR}_\\mathrm{crit}. \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (1) 揭示了相变阈值随纵横比 $\\beta$ 单调递增：当 $\\beta \\to 0$（测量数远多于未知数）时 $\\mathrm{SNR}_\\mathrm{crit} \\to 0$，伪逆解渐近无偏；然而当 $\\beta \\to 1$（过参数化区），$\\mathrm{SNR}_\\mathrm{crit} \\to 3$，即使 SNR 达到 3 仍可能发生相变。命题 1 (相变尖锐性): 在 $\\mathrm{SNR} = \\mathrm{SNR}_\\mathrm{crit}$ 处，重建误差的导数不连续，该相变为二阶相变 (Baik-Ben Arous-Péché transition)，与统计物理中的自旋玻璃相变具有相同的数学结构。"
+    },
+    {
+      "type": "math",
+      "latex": "\\lim_{\\mathrm{SNR} \\to \\mathrm{SNR}_\\mathrm{crit}^+} \\frac{\\partial \\|\\hat x - x^\\dagger\\|_2}{\\partial \\mathrm{SNR}} = -\\infty, \\quad \\lim_{\\mathrm{SNR} \\to \\mathrm{SNR}_\\mathrm{crit}^-} \\|\\hat x - x^\\dagger\\|_2 = \\mathcal{O}(1). \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (2) 的导数不连续性是相变的核心特征。主成分回归 (PCR) 通过保留前 $k$ 个主成分可将相变阈值推后："
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{SNR}_\\mathrm{PCR}(\\beta, k) = \\frac{1}{1 - \\beta}\\,\\Bigl(\\frac{1+\\sqrt{\\beta}}{1-\\sqrt{\\beta}}\\Bigr)^{2/k} - 1, \\quad k = \\mathrm{rank}(A_k). \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (3) 的 $\\mathrm{SNR}_\\mathrm{PCR}$ 当 $k$ 远小于 $n$（极端稀疏主成分）时，可比 $\\mathrm{SNR}_\\mathrm{crit}$ 高出数个数量级，从而将不可解的\"相变区\"转化为可解的\"良态区\"。推论 (正则化的相变推后机制): 任何形式 Tikhonov 正则化等价于在 $A^\\top A$ 上加 $\\lambda I$，等价于将 MP 律的下界 $\\lambda_-$ 平移到 $\\lambda_- + \\lambda$，从而将有效纵横比变为 $\\beta_\\mathrm{eff}(\\lambda) = (1+\\sqrt{\\beta})^2 - \\lambda$ 对应的相变阈值。"
+    },
+    {
+      "type": "p",
+      "text": "在算法层面，PCR 的最优截断索引 $k$ 由 $\\sigma_k \\approx \\sigma_\\epsilon \\sqrt{m}$ 决定，等价于\"保留解释 99% 方差\"经验准则的严格化。讨论: 本文结果对实际反问题设计的指导意义在于 (i) 在反演前应先估计测量矩阵的 MP 律支撑 $\\lambda_+$ 与相变阈值 $\\mathrm{SNR}_\\mathrm{crit}$，作为反演可行性的先验指标；(ii) 当实测 SNR 接近 $\\mathrm{SNR}_\\mathrm{crit}$ 时，单纯增加测量次数已无收益，必须改用强正则化或非线性参数化；(iii) 在 $\\beta > 1$ 的过参数化区，建议使用 Bayesian 主成分回归或稀疏 PCA 替代 PCR。"
+    },
+    {
+      "type": "p",
+      "text": "结论: 随机矩阵理论为最小二乘逆问题提供了一套基于相变的稳定性分析工具，将传统正则化理论的\"渐近误差率\"推广到\"相变阈值\"层面，揭示了高维反问题在 SNR 维度的可行性边界。该框架可推广至矩阵补全、张量反演、贝叶斯线性逆问题等更广泛的高维统计反演场景。"
+    }
+  ]
+}

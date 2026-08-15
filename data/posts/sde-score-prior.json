@@ -1,0 +1,70 @@
+{
+  "id": "sde-score-prior",
+  "title": "基于 SDE 的生成模型：逆问题的即插即用先验革命",
+  "date": "2026-02-07",
+  "tags": [
+    "微分方程",
+    "计算成像",
+    "深度学习"
+  ],
+  "abstract": "从吉布斯先验的能量景观角度解读分数扩散模型作为逆问题正则化器的数学结构。",
+  "body": [
+    {
+      "type": "p",
+      "text": "基于分数的扩散模型（score-based generative model）将先验分布编码为时间反转的随机微分方程（SDE）。设前向过程"
+    },
+    {
+      "type": "math",
+      "latex": "dx = f(x, t)\\,dt + g(t)\\,dw, \\quad x(0) = x_0 \\sim p_{\\mathrm{data}}, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其反向时间 SDE 为："
+    },
+    {
+      "type": "math",
+      "latex": "dx = \\bigl[f(x, t) - g^2(t)\\,\\nabla_x \\log p_t(x)\\bigr]\\,dt + g(t)\\,d\\bar w, \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\nabla_x \\log p_t(x)$ 是边缘密度 $p_t$ 的分数函数（score function）。当 $f$、$g$ 满足一定正则性时，式 (2) 的解流形与式 (1) 互为时间反转，且二者保持测度等价（in law）。通过神经网络 $s_\\theta(x, t) \\approx \\nabla_x \\log p_t(x)$ 的去噪分数匹配训练（denoising score matching, DSM），可以从数据集中学习到对 $\\nabla_x \\log p_t$ 的高维近似，为成像逆问题提供了前所未有的强力先验。"
+    },
+    {
+      "type": "p",
+      "text": "从正则化理论视角看，分数模型隐式定义了一个 Gibbs 类型的先验 $p_0(x) \\propto e^{-J(x)}$，其能量 $J$ 由训练数据集的分布编码。在逆问题 $y = Ax + \\epsilon$ 中，Bayes 后验可写为"
+    },
+    {
+      "type": "math",
+      "latex": "\\log p(x \\mid y) = \\log p(y \\mid x) + \\log p(x) + \\mathrm{const}, \\quad \\nabla_x \\log p(y \\mid x) \\propto -\\tfrac{1}{2\\sigma^2}\\,A^\\top(Ax - y). \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "由此，引导项 $\\nabla \\log p_t$ 等价于用随机梯度朗之万动力学（SGLD）去逼近后验分布。设引导强度为 $\\zeta \\in [0, 1]$，则条件采样可写为"
+    },
+    {
+      "type": "math",
+      "latex": "\\nabla_x \\log p_{\\zeta}(x \\mid y) = s_\\theta(x, t) + \\zeta\\,\\tfrac{1}{2\\sigma^2}\\,A^\\top(Ax - y), \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "$\\zeta = 0$ 退化为纯先验采样（无数据约束），$\\zeta = 1$ 为全条件生成（强数据约束）。调节 $\\zeta$ 控制着先验平滑性与数据保真度之间的平衡，本质上是在无穷维函数空间中将分数模型定义的隐式流形投影到由线性算子 $A$ 限定的子流形上。"
+    },
+    {
+      "type": "p",
+      "text": "更深层地，扩散模型的正则化结构可被解读为 Tweedie 公式驱动的自洽性收缩。给定带噪观测 $x_t$，Tweedie 公式给出 $x_0$ 的最优估计："
+    },
+    {
+      "type": "math",
+      "latex": "\\hat x_0(x_t) = \\tfrac{1}{\\bar\\alpha_t}\\bigl(x_t + (1 - \\bar\\alpha_t)\\,s_\\theta(x_t, t)\\bigr), \\tag{5}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "这正是分数引导下的近端算子——它是去噪器、也是正则化子。在迭代反投影、plug-and-play 框架、变分深度展开中，$\\hat x_0$ 反复被用作隐式正则化项，使得分数先验能够即插即用地接入任意线性或弱非线性逆问题。在压缩感知 MRI、稀疏视图 CT、相位恢复、去模糊等任务中，该框架将 PSNR/SSIM 推进了 $3$–$5$ dB，同时具备对模型误差的鲁棒性，已成为现代计算成像的核心范式之一。"
+    }
+  ]
+}

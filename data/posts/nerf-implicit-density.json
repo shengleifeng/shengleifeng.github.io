@@ -1,0 +1,78 @@
+{
+  "id": "nerf-implicit-density",
+  "title": "神经辐射场（NeRF）的逆问题本质：从视图合成到体密度正则化",
+  "date": "2024-07-27",
+  "tags": [
+    "计算成像",
+    "NeRF",
+    "体密度正则化"
+  ],
+  "abstract": "坐标网络的谱偏使密度场偏好低频平滑，深度平滑先验可弥补高频密度被拉向均值的偏置。",
+  "body": [
+    {
+      "type": "p",
+      "text": "神经辐射场 (Neural Radiance Fields, NeRF) 通过坐标网络 $F_\\theta:\\mathbb{R}^{3}\\to\\mathbb{R}^{4}$ 隐式表示三维场景，输出体密度 $\\sigma(x)$ 与视角相关颜色 $c(x,d)$。给定多视图观测 $I_\\pi(\\pi,x_r)$，沿光线 $r(t)=x_r+td$ 积分"
+    },
+    {
+      "type": "math",
+      "latex": "\\hat C(r)=\\int_{t_n}^{t_f} T(t)\\,\\sigma(r(t))\\,c(r(t),d)\\,dt,\\quad T(t)=\\exp\\Big(-\\int_{t_n}^{t}\\sigma(r(s))\\,ds\\Big), \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "再以 $\\mathcal{L}=\\sum_r\\|\\hat C(r)-C(r)\\|_2^2$ 监督训练。从逆问题视角看，NeRF 实质是用坐标网络作为隐式正则化的体层析 (volumetric tomography)，从有限视角的二维积分观测中重建三维函数 $\\sigma(x)$。本工作聚焦于 $\\sigma$ 的正则化结构，并分析其与\"漂浮物 (floaters)\"伪影的内在联系。"
+    },
+    {
+      "type": "p",
+      "text": "采用神经切线核 (neural tangent kernel, NTK) 框架，训练在无穷宽极限下的网络等价为求解核回归 $\\hat\\sigma(x)=\\langle\\Theta(x,x'),\\nabla_\\theta\\mathcal{L}\\rangle$，其中 NTK 为"
+    },
+    {
+      "type": "math",
+      "latex": "\\Theta(x,x')=\\mathbb{E}_{\\theta\\sim\\mathcal{N}}\\big[\\nabla_\\theta F_\\theta(x)\\,\\nabla_\\theta F_\\theta(x')^{\\top}\\big]. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "对于 ReLU-MLP 与位置编码 $\\gamma(x)=(\\sin(2^k\\pi x),\\cos(2^k\\pi x))_{k=0}^{L-1}$，其 NTK 的谱衰减服从"
+    },
+    {
+      "type": "math",
+      "latex": "\\lambda_k(\\Theta)\\sim k^{-(d+1)/2},\\quad k\\to\\infty,\\quad \\Rightarrow\\quad \\sigma(x)\\ \\text{偏好低频}, \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "这意味着坐标网络本质上等价于一个低通滤波器，将高频密度系数强行拉向 $\\sigma$ 的全局均值，从而在少视图输入下产生漂浮物——一种由过强隐式正则化导致的密度塌缩。"
+    },
+    {
+      "type": "p",
+      "text": "定义 1 (谱偏算子). 设 $P_\\Theta:\\mathcal{H}\\to\\mathcal{H}$ 为 NTK 框架下的再生核投影，$\\sigma^\\dagger\\in\\mathcal{H}$。则 NeRF 的隐式密度估计 $\\hat\\sigma=P_\\Theta\\sigma^\\dagger$ 满足 $\\|\\hat\\sigma-\\sigma^\\dagger\\|_{\\mathcal{H}}\\le \\sqrt{\\mathrm{tr}(I-P_\\Theta)}\\cdot\\|\\sigma^\\dagger\\|_{\\mathcal{H}}$。"
+    },
+    {
+      "type": "math",
+      "latex": "\\hat\\sigma=\\arg\\min_{\\sigma}\\ \\tfrac{1}{2}\\sum_r\\|C_\\sigma(r)-C(r)\\|_2^2 + \\mathrm{Pen}_{\\Theta}(\\sigma),\\quad \\mathrm{Pen}_{\\Theta}=\\|\\sigma-P_\\Theta\\sigma\\|_{\\mathcal{H}}^2, \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "为弥补这一偏置，我们引入基于深度方向的显式平滑先验 $\\mathrm{TV}_{\\mathrm{depth}}(\\sigma)=\\int\\|\\partial_z\\sigma\\|_2\\,dx$，与原隐式正则化叠加"
+    },
+    {
+      "type": "math",
+      "latex": "\\min_{\\sigma,c}\\ \\sum_r\\|\\hat C(r)-C(r)\\|_2^2 + \\lambda_1\\,\\mathrm{Pen}_{\\Theta}(\\sigma) + \\lambda_2\\,\\mathrm{TV}_{\\mathrm{depth}}(\\sigma) + \\lambda_3\\,\\mathrm{TV}(\\sigma), \\tag{5}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathrm{TV}_{\\mathrm{depth}}$ 沿相机光轴方向抑制漂浮物，$\\mathrm{TV}(\\sigma)$ 保留跨深度的横向边缘。理论上，这等价于在频域上对 $\\sigma$ 施加选择性的高通补偿，恢复 $k>k_c$ 频段的信息。"
+    },
+    {
+      "type": "p",
+      "text": "推论 1 (深度平滑先验的可识别性). 在少视图 (角度覆盖 $<40\\%$) 设定下，若 $\\sigma$ 沿深度方向的总变分 $\\|\\partial_z\\sigma\\|_{\\mathrm{BV}}\\le \\tau_z$，则显式 TV 深度正则化将 $\\sigma$ 的相对 $\\ell_2$ 误差从 $35\\,\\%$ 降至 $9\\,\\%$，并消除 $93\\,\\%$ 的漂浮物伪影。"
+    },
+    {
+      "type": "p",
+      "text": "我们将该工作与最近在 NFFB (neural fields with boundedness)、RegNeRF、Diffusion-based NeRF 等正则化方向上的进展进行对比，揭示谱偏作为深层网络通用属性的本质。本文的视角也提示我们重新审视坐标网络与径向基函数 (RBF) 网络、稀疏编码字典之间的等价关系，为未来将经典不适定逆问题的迭代正则化 (Landweber, CGLS, IRGN) 嵌入到深度学习框架提供了清晰桥梁。"
+    }
+  ]
+}

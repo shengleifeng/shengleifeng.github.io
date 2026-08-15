@@ -1,0 +1,47 @@
+{
+  "id": "upwind-regularization",
+  "title": "对流-扩散方程源项识别中的迎风正则化：抑制数值振荡与反演偏差",
+  "date": "2024-11-02",
+  "tags": [
+    "微分方程",
+    "迎风正则化",
+    "源项识别"
+  ],
+  "abstract": "单边差分偏置使惩罚方向与对流一致，等价于在目标泛函中增加正比于速度场的人工耗散项。",
+  "body": [
+    {
+      "type": "p",
+      "text": "对流-扩散方程源项反问题是计算地球物理与环境科学中的经典不适定问题: 给定在区域 $\\Omega\\subset\\mathbb{R}^d$ 内的浓度测量 $u(x,t)$, 反推源项分布 $f(x)$。前向问题由 $\\partial_t u + v\\cdot\\nabla u - D\\Delta u = f$ 描述, 其中 $v(x)$ 为已知速度场, $D$ 为扩散系数。在 $v$ 主导的输运体制下 (Péclet 数 $\\mathrm{Pe}=\\|v\\|L/2D\\gg 1$), 灵敏度矩阵 $A$ 的行向量在迎风方向高度集中, 而在逆风方向退化, 形成严重的各向异性病态结构。标准 Tikhonov 正则化 $\\alpha\\|\\nabla f\\|^2$ 因为对所有方向同等惩罚, 在逆风方向产生虚假振荡 (spurious oscillations) 与鬼影伪迹。"
+    },
+    {
+      "type": "p",
+      "text": "本文的核心观察是: 正问题在数值求解中使用的迎风格式 (upwind scheme) 是稳定的, 但反问题却使用了无方向偏置的标准梯度算子, 二者在物理上不一致。本文提出“迎风正则化” (upwind regularization), 即在惩罚项的梯度计算中采用单边有限差分, 使其偏置方向与物理对流方向一致:"
+    },
+    {
+      "type": "math",
+      "latex": "\\int_{\\Omega} |\\nabla^{\\mathrm{up}}f|^2\\,dx = \\int_{\\Omega} |(\\nabla f - \\beta\\,v f)_+|^2\\,dx, \\quad \\beta = \\alpha/(2D), \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $(\\cdot)_+$ 表示仅在 $v\\cdot\\nabla f$ 沿下风方向时取正, 相当于用后向差分替代中心差分。式 (1) 的引入看似简单, 但其数学结构等价于在目标泛函中增加了一个人工耗散项:"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathcal{J}_{\\mathrm{up}}(f) = \\mathcal{J}_{\\mathrm{tik}}(f) + \\beta\\int_{\\Omega} (v\\cdot\\nabla f)\\,f\\,dx,\\quad \\mathcal{J}_{\\mathrm{tik}}(f)=\\tfrac{1}{2}\\|Af-y\\|^2 + \\tfrac{\\alpha}{2}\\|\\nabla f\\|^2. \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "这一解释来自分部积分 $\\int|\\nabla^{\\mathrm{up}}f|^2 = \\int|\\nabla f|^2 + 2\\beta\\int(v\\cdot\\nabla f)\\,f + \\beta^2\\int|v|^2 f^2$, 其中 $\\beta^2$ 项为各向同性 Tikhonov, $\\beta$ 项为对流-诱导的人工耗散, 其作用是在反演解中沿 $v$ 方向引入选择性平滑, 与正问题的迎风格式在数学上对偶。我们证明, 当 $\\beta$ 选取为 $\\alpha/(2D)$ 时, 反演的 Fréchet 导数 $A^\\ast A + \\alpha I + \\beta\\,L_v$ (其中 $L_v=v\\cdot\\nabla$ 为对流算子) 恰好对应前向算子的离散迎风伴随, 从而恢复“正-反方向一致性”。"
+    },
+    {
+      "type": "p",
+      "text": "算法层面, 我们将该问题转化为加权各向异性 Tikhonov: $\\min_f\\,\\tfrac{1}{2}\\|Af-y\\|^2 + \\tfrac{\\alpha}{2}\\|W^{1/2}\\nabla f\\|^2$, 其中 $W$ 为非负对称矩阵, 局部正比于 $\\mathrm{diag}(|v_1|,\\ldots,|v_d|)$ 在迎风方向加权的对角元素。该问题的 Euler-Lagrange 方程是双侧各向异性椭圆方程, 可由 Krylov 子空间方法 (CG, GMRES) 高效求解。我们还推导了在 $\\beta$ 满足 Carleman 估计条件下的对数凸性先验, 据此给出 $\\alpha$ 的偏差原理选取 $\\alpha\\sim\\delta^{1/2}$。"
+    },
+    {
+      "type": "p",
+      "text": "讨论与权衡: 迎风正则化本质上是将正问题的数值耗散反向注入反问题, 物理上合理但需注意双重耗散风险——当正问题已采用强迎风格式 (人工粘性 $\\nu$) 时, 反问题再引入 $\\beta$ 形式的耗散会导致总平滑过度, 此时应减小 $\\beta$ 为 $\\beta\\to\\beta(1-\\nu/\\nu_{\\mathrm{max}})$。另一权衡: 当 $v$ 随空间变化或存在回流区 (recirculation zones) 时, 全局单边差分不再有效, 需在 $v\\cdot n>0$ 与 $v\\cdot n<0$ 的边界上切换差分方向, 即所谓的“局部迎风”正则化。结论上, 迎风正则化将反问题的物理先验与正问题的数值实现统一, 在河流水质反演、大气污染溯源、地下水污染源识别中均显示出对鬼影振荡的有效抑制, 后续可与 PINN 物理约束结合以进一步提升参数可辨识性。"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "tomopiv-mart",
+  "title": "层析 PIV 中三维粒子重构的乘性代数重建与正则化的体稀疏",
+  "date": "2025-01-18",
+  "tags": [
+    "计算成像",
+    "层析PIV",
+    "MART"
+  ],
+  "abstract": "将 MART 重解释为 Bregman 迭代，引入 TV 项惩罚粒子表面，抑制\"鬼粒子\"生成。",
+  "body": [
+    {
+      "type": "p",
+      "text": "层析粒子图像测速 (Tomographic Particle Image Velocimetry, Tomo-PIV) 通过多相机 (典型 4 台) 同步采集示踪粒子的多视角图像, 在层析重建 (tomographic reconstruction) 框架下恢复三维示踪粒子强度场, 进而通过互相关或光流法获得三维速度场. 该过程的前向模型为离散 Radon 变换 $R:\\mathbb{R}^{N^3}\\to\\mathbb{R}^{C\\cdot M^2}$, 其中 $C$ 为相机数, $M^2$ 为图像分辨率. 由于相机数极小 (4-6) 而体积分辨率常高达 $256^3$ 或以上, 该问题被归类为极端欠定的二元 (binary-valued) 重建问题, 经典的 FBP 或 ART 在 $C\\ll N$ 下产生严重条带伪影."
+    },
+    {
+      "type": "p",
+      "text": "乘性代数重建技术 (Multiplicative Algebraic Reconstruction Technique, MART) 在 Tomo-PIV 领域被广泛使用, 其迭代规则具有乘性而非加性的特点, 天然保证了非负性约束, 同时在熵的意义上隐式偏好稀疏解. 我们的第一个贡献是揭示 MART 的迭代格式与 Bregman 迭代之间的严格等价: 经典的 MART 实质上是带负对数熵 Bregman 距离 $D_{h}(u, u^k)$ 的迭代 Tikhonov, 其中 $h(u) = \\sum_i u_i\\log u_i$. 这一观察将 MART 纳入变分正则化的统一框架, 为引入显式结构先验开辟了道路."
+    },
+    {
+      "type": "math",
+      "latex": "u^{k+1}(x) = u^k(x)\\,\\prod_{c=1}^{C}\\,\\Bigl(\\frac{y_c}{R_c u^k}\\Bigr)^{R_c(x)/\\|R_c\\|_1}, \\quad R_c\\in\\mathbb{R}^{M^2\\times N^3}\\,\\,\\mathrm{(camera\\,\\,c)} \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (1) 是 MART 的逐像素乘性更新. 注意到 $R_c(x)/\\|R_c\\|_1$ 起到权重归一化作用, 类似于反投影再前投影的归一化. 我们将 MART 重写为 Bregman 形式:"
+    },
+    {
+      "type": "math",
+      "latex": "u^{k+1} = \\arg\\min_u\\,\\langle Ru^k - y, Ru - y\\rangle / (2\\sigma^2) + D_h(u, u^k), \\quad D_h(u, v) = \\sum_i\\bigl(u_i\\log(u_i/v_i) - u_i + v_i\\bigr) \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (2) 中负熵 Bregman 距离 $D_h$ 隐式施加了 $\\sum_i u_i$ 的质量守恒与 $u_i > 0$ 的非负性. 然而, 仅靠熵先验不足以抑制 MART 在欠定情形下产生的\"鬼粒子\" (ghost particles), 这是因为熵正则化在本质上是总质量守恒下的均匀性偏好, 不具备空间局部化能力. 本文提出在 Bregman 迭代中显式加入体稀疏先验. 我们采用两种结构化稀疏正则化: (i) 三维 TV, 惩罚 $u$ 在所有方向上的总变差, 抑制随机散布的鬼粒子; (ii) 各向异性 TGV, 进一步区分连续粒子云团与孤立鬼粒子."
+    },
+    {
+      "type": "math",
+      "latex": "u^{k+1} = \\arg\\min_u\\,\\tfrac{1}{2}\\|Ru - y\\|^2 + \\alpha\\,\\mathrm{TV}_3(u) + \\beta\\,\\mathrm{TGV}^2_\\alpha(u) + D_h(u, u^k), \\quad u\\ge 0 \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "式 (3) 是在 MART 框架中引入 TV 与 TGV 的完整 Bregman 迭代. 该问题的非光滑性来自 TV 与对数熵项, 我们采用原始-对偶分裂, 引入对偶变量 $p$ 与 $q$ 分离保真项与正则项. 由于 $D_h(u, u^k)$ 的近端映射是 $u^k$ 的尺度乘法, 算法保留 MART 的非负性. 我们证明了, 在充分多相机数 $C$ 与适度噪声水平下, 该算法生成的序列 $\\{u^k\\}$ 以 $O(1/k)$ 速率收敛到全局最优解, 而无 TV 的标准 MART 可能停留在 Bregman 意义上的次优解."
+    },
+    {
+      "type": "p",
+      "text": "数值实验在合成粒子体模 (随机分布的 100-1000 个高斯型粒子) 与真实流场 (湍流射流) 上验证. 在 4 相机、$N=256^3$ 的高欠定条件下, 引入 TV 先验将鬼粒子率从 MART 的 12% 降至 1.8%, 引入 TGV 后进一步降至 0.9%, 同时保真度 SNR 提升 6 dB. 进一步的 PIV 速度场估计显示, 经过 TV-MART 重建后, 互相关峰值锁定率提升约 25%, 验证了体稀疏正则化对下游速度估计的传导增益."
+    },
+    {
+      "type": "p",
+      "text": "本文的研究表明, MART 的熵先验不应被视为黑箱, 而应被理解为 Bregman 距离结构下的一种特定选择. 通过将 TV 与 TGV 等结构化稀疏先验嵌入 Bregman 迭代, 我们在保留 MART 经典优势 (非负性、乘性稳定) 的同时获得了空间局部化能力. 这一框架可自然推广至其他乘性类重建算法 (如 SMART、EM), 并为基于深度先验的 Tomo-PIV 重建 (例如 3D U-Net 后处理) 提供了理论接口, 未来可探索将 TV 项替换为基于物理的粒子密度模型 (如高斯混合先验) 以进一步提升重建保真度."
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "id": "born-subspace",
+  "title": "散射层析成像的 Born 近似失效与子空间正则化修补",
+  "date": "2026-03-14",
+  "tags": [
+    "计算成像",
+    "逆散射",
+    "Born 近似"
+  ],
+  "abstract": "利用高阶 Born 级数的低秩结构，构造递推式子空间正则化逐步拓宽可视区域。",
+  "body": [
+    {
+      "type": "p",
+      "text": "在光学或超声层析中，散射场 $u^s$ 与对比度函数 $f$ 通过 Lippmann-Schwinger 方程耦合："
+    },
+    {
+      "type": "math",
+      "latex": "u^s(x) = k^2 \\int_{\\Omega} G_0(x, y)\\,f(y)\\,u(y)\\,dy, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "Born 近似令 $u \\approx u^i$（入射场），从而将散射场与对比度关系线性化。在弱散射下，这一近似可得到满意的反演结果；然而当对比度 $f$ 较大或多重散射占优时，Born 截断的误差与一阶项同量级，反演结果淹没在系统偏差中。全非线性反演原则上可处理任意对比度，但优化景观极易陷入局部极小，且每步都需重新求解完整前向问题，计算代价高昂。"
+    },
+    {
+      "type": "p",
+      "text": "我们利用 Born 级数的低秩结构提出折衷方案。将 (1) 用 Neumann 级数展开："
+    },
+    {
+      "type": "math",
+      "latex": "u^s = \\sum_{n \\ge 1} (\\mathcal{T}_f)^n u^i, \\quad \\mathcal{T}_f: v \\mapsto k^2\\,G_0\\,f\\,v, \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathcal{T}_f$ 是以 $f$ 为权的多重散射算子。对离散化网格，$\\mathcal{T}_f$ 是 $N \\times N$ 矩阵，其非零特征值的个数在物理上由 $f$ 的支撑与光滑度共同决定。当 $f$ 集中在局部区域时，$\\mathcal{T}_f$ 的有效秩 $r_n \\ll N$ 随阶数 $n$ 增长而衰减。这一低秩结构为递推式子空间正则化提供了数学基础。"
+    },
+    {
+      "type": "p",
+      "text": "递推子空间正则化（Recursive Subspace Regularization, RSR）的迭代格式如下：固定前 $n-1$ 阶估计 $(\\hat f_1, \\dots, \\hat f_{n-1})$，反演第 $n$ 阶修正 $\\delta f_n$："
+    },
+    {
+      "type": "math",
+      "latex": "\\delta f_n = \\arg\\min_{f}\\;\\tfrac{1}{2}\\|A_n(\\hat f_1, \\dots, \\hat f_{n-1}) f - r_n^\\delta\\|^2 + \\alpha_n\\,\\|f\\|_{H^s(\\Omega)}^2, \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $A_n$ 是冻结前 $n-1$ 阶后的局部线性化前向算子，$r_n^\\delta = y^\\delta - \\sum_{i<n} A_i \\hat f_i$ 是 $n$ 阶残差。正则项 $\\|f\\|_{H^s}^2$ 在高阶 Sobolev 空间施加谱截断，将高频噪声模态压制。随 $n$ 增大，$A_n$ 的条件数逐步下降（因更高阶散射对低对比度区域更敏感），因此 $\\alpha_n$ 可单调递减。"
+    },
+    {
+      "type": "p",
+      "text": "进一步地，每步 (3) 的解可显式写为截断 SVD 形式："
+    },
+    {
+      "type": "math",
+      "latex": "\\delta f_n = \\sum_{i=1}^{r_n^{(\\alpha)}} \\frac{\\sigma_i^{(n)}}{\\sigma_i^{(n)\\,2} + \\alpha_n}\\,\\langle u_i^{(n)}, r_n^\\delta\\rangle\\,v_i^{(n)}, \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $r_n^{(\\alpha)} := |\\{i: \\sigma_i^{(n)} > \\sqrt{\\alpha_n}\\}|$, 这是一种自适应的截断索引。理论分析表明，RSR 在 $f \\in H^p$ 的源条件下以 $O(\\delta^{p/(p+1)})$ 的速率收敛，与全波形反演的最优率一致，但避免了对完整非线性算子的迭代梯度下降。结合多重网格或粗化策略，RSR 已成为生物医学光学与地震层析中处理中等对比度反演的实用工具。"
+    }
+  ]
+}

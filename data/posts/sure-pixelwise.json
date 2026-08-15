@@ -1,0 +1,65 @@
+{
+  "id": "sure-pixelwise",
+  "title": "基于 Stein 无偏风险估计（SURE）的逐像素自适应正则化参数图",
+  "date": "2025-03-15",
+  "tags": [
+    "正则化理论",
+    "SURE",
+    "自适应"
+  ],
+  "abstract": "推导对每个像素单独估计局部 MSE 的散度表达式，将标量参数选择转为参数映射的变分优化。",
+  "body": [
+    {
+      "type": "p",
+      "text": "Stein 无偏风险估计 (SURE) 是高斯白噪声背景下评估去噪器 $\\hat{x}(y)$ 风险的经典工具。设观测 $y = x + \\varepsilon$, 其中 $\\varepsilon \\sim \\mathcal{N}(0, \\sigma^2 I)$, 则 SURE 给出均方误差 $\\mathbb{E}\\|\\hat{x}(y) - x\\|^2$ 的无偏估计:"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{SURE}(\\hat{x}) = \\|y - \\hat{x}(y)\\|^2 + 2\\,\\sigma^2\\, \\mathrm{div}_y \\hat{x}(y) - n\\,\\sigma^2, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathrm{div}_y \\hat{x} = \\sum_i \\partial \\hat{x}_i / \\partial y_i$。这一公式是 SURE 在小波收缩、BM3D 等去噪算法中作为无监督参数选择工具的基石。然而, 在图像反演问题中, 单一标量正则化参数 $\\alpha$ 无法同时适应纹理、边缘、平坦区等异质区域, 这是图像非平稳统计结构的内在要求。"
+    },
+    {
+      "type": "p",
+      "text": "我们将 SURE 推广到逐像素 (pixelwise) 的形式。核心思想是: 对每个像素 $i$ 单独定义局部均方误差 $\\mathrm{MSE}_i = \\mathbb{E}[(\\hat{x}_i - x_i)^2]$, 推导其无偏估计:"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{SURE}_i(\\alpha) = |y_i - \\hat{x}_i(\\alpha)|^2 + 2\\sigma^2\\,\\partial_{\\hat{x}_i}\\,\\hat{x}_i(\\alpha) - \\sigma^2, \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "该式第一项是局部残差平方, 第二项是去噪器在该像素的 Jacobian 对角元, 第三项是单像素期望修正。逐像素 SURE 的合理性建立在两个假设上: (i) 噪声独立同分布, 使期望可分离; (ii) 去噪器 $\\hat{x}_i$ 关于 $y_i$ 的偏导数可有效计算 (例如对线性滤波器为滤波核的对应权重)。基于逐像素 SURE, 我们将正则化参数选择问题重构为对参数映射 $\\alpha: \\Omega \\to \\mathbb{R}_+$ 的变分优化:"
+    },
+    {
+      "type": "math",
+      "latex": "\\alpha^\\ast = \\arg\\min_{\\alpha \\in \\mathcal{A}}\\, \\sum_{i=1}^n \\mathrm{SURE}_i(\\alpha(x_i)) + \\mu\\, \\mathrm{TV}(\\alpha), \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $\\mathrm{TV}(\\alpha)$ 是参数图的全变差半范数, $\\mu$ 控制其平滑度。这一项至关重要: 若无平滑惩罚, 逐像素 SURE 的最优化将退化为像素级的独立选择, 在边界处产生剧烈的参数跳跃, 导致解的振铃伪像; 引入 TV 之后, 参数图倾向于分段常数, 适应图像中大尺度的统计平稳区域。"
+    },
+    {
+      "type": "p",
+      "text": "上述框架的算法实现依赖于 (2) 式中 Jacobian 的高效计算。对于线性反卷积 $\\hat{x} = A^{\\dagger}_\\alpha y$ (其中 $A^\\dagger_\\alpha$ 是正则化伪逆), Jacobian 矩阵为 $J = \\partial \\hat{x} / \\partial y = A^\\dagger_\\alpha$, 因此 $\\mathrm{diag}(J)$ 即为 $A^\\dagger_\\alpha$ 的对角元, 可通过随机迹估计 (Hutchinson estimator) 近似:"
+    },
+    {
+      "type": "math",
+      "latex": "\\mathrm{diag}(A^\\dagger_\\alpha)_i \\approx \\tfrac{1}{K}\\, \\sum_{k=1}^K z_k^\\top\\, A^\\dagger_\\alpha\\, e_i\\, z_k, \\quad z_k \\sim \\mathcal{N}(0, I). \\tag{4}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "对每次 $z_k$ 采样, 只需一次前向与一次伴随算子应用, 即可在 $O(K\\,n)$ 复杂度内完成 Jacobian 对角元的蒙特卡洛估计, 这与显式计算整个 Hessian 的 $O(n^2)$ 复杂度相比有数量级提升。定理 (逐像素 SURE 的无偏性与一致性): 在上述假设下, $\\mathbb{E}[\\mathrm{SURE}_i(\\alpha)] = \\mathrm{MSE}_i(\\alpha)$ 对所有 $i$ 与 $\\alpha$ 成立; 当 $n \\to \\infty$ 时, 由 (3) 得到的 $\\alpha^\\ast$ 一致收敛到 oracle 参数图 $\\alpha^\\dagger(x) = \\arg\\min_\\alpha \\mathrm{MSE}(x; \\alpha)$。"
+    },
+    {
+      "type": "p",
+      "text": "讨论: 逐像素 SURE 自适应化的一个关键优势是其在强纹理图像上的优越性。传统方法 (如全局 SURE) 在纹理与平坦区的边界处产生平均化的 $\\alpha$, 牺牲了任一方的最优性; 逐像素方案则在统计意义下逼近每像素的最优收缩。同时, 引入 TV 正则化又避免了过拟合像素级噪声的脆弱性。值得指出, 该方法对噪声方差 $\\sigma^2$ 的精确性敏感, 与全局 SURE 共享这一弱点: 若 $\\sigma$ 被高估, Jacobian 项被放大, $\\alpha^\\ast$ 倾向于过平滑; 若被低估, 则倾向于欠平滑。我们建议使用 Median Absolute Deviation (MAD) 估计器在小波高频子带进行 $\\sigma$ 的鲁棒估计。展望未来, 该框架可推广到 Poisson 噪声 (扩展为 Poisson Unbiased Risk Estimate, PURE) 以及其他指数族分布, 形成对成像逆问题中统计异质性的统一处理工具。"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "id": "hammerstein-waveform",
+  "title": "波形迭代法在非线性积分方程逆问题中的半收敛：Hammerstein 模型的谱分析",
+  "date": "2025-04-26",
+  "tags": [
+    "微分方程",
+    "不适定逆问题",
+    "Hammerstein"
+  ],
+  "abstract": "利用冻结系数思路推导局部谱半径，证明半收敛发生在奇异值与导数构成的管状区域内。",
+  "body": [
+    {
+      "type": "p",
+      "text": "Hammerstein 算子方程在扩散光学成像、半导体载流子动力学以及非线性参数识别中具有典型代表性。其结构由一线性积分算子 $A: L^2(\\Omega) \\to L^2(\\Omega)$ 与一非线性 Nemytskii 映射 $F(\\cdot, x(\\cdot))$ 复合而成, 形成前向模型:"
+    },
+    {
+      "type": "math",
+      "latex": "y(s) = (A \\circ F(x))(s) = \\int_\\Omega K(s, t)\\,F(t, x(t))\\,dt, \\quad s \\in \\partial\\Omega, \\tag{1}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "反问题设定为: 在已知 $y^\\delta = y + \\delta$ ($\\|\\delta\\| \\le \\eta$) 的条件下, 恢复非线性参数场 $x^\\dagger \\in X$。该算子是紧的, 其线性化 $A F_x^\\dagger$ 具有按 $\\sigma_i \\to 0$ 衰减的奇异值系统, 这便是不适定性的根本来源。波形迭代 (非线性 Landweber) 的形式为"
+    },
+    {
+      "type": "math",
+      "latex": "x^{k+1} = x^k + \\alpha_k\\, F_{x^k}^{\\,-1} A^\\ast \\bigl( y^\\delta - A F(x^k) \\bigr), \\tag{2}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "其中 $F_{x^k} = \\mathrm{diag}(\\partial_x F(t, x^k(t)))$。其优势在于无条件稳定, 残差单调下降; 代价是收敛缓慢, 且当残差降至噪声水平时半收敛现象发生: 解先逼近真解, 后因放大高频奇异值分量而偏离。"
+    },
+    {
+      "type": "p",
+      "text": "我们采用冻结系数 (frozen coefficient) 策略, 将问题在每一步局部线性化。设 $B_k = A \\circ \\mathrm{diag}(F_{x^k})$, 在 $A$ 的奇异值系统 $\\{(u_i, v_i, \\sigma_i)\\}_{i \\ge 1}$ 下给出关键谱估计:"
+    },
+    {
+      "type": "math",
+      "latex": "\\rho\\bigl( I - \\alpha\\,B_k^\\ast B_k \\bigr) \\le 1 - \\alpha\\,\\sigma_{\\min}^2(A)\\,\\min_{t \\in \\Omega} |\\partial_x F(t, x^k(t))| + \\alpha\\,\\|A\\|^2 \\,\\mathrm{Lip}(F_x), \\tag{3}",
+      "display": true
+    },
+    {
+      "type": "p",
+      "text": "当 $\\partial_x F$ 保持严格正且 $\\beta > 0$ 为下界, 选择 $\\alpha_k \\in (0, 2\\,\\sigma_{\\min}^2 \\,\\beta / \\|A\\|^4)$ 即可保证 $\\rho < 1$, 从而半收敛单调成立。该谱界还与 Morozov 偏差原理兼容: 当 $\\|A F(x^k) - y^\\delta\\| \\approx \\eta$ 时, 半收敛平台位于由 $A$ 的奇异值与 $\\partial_x F$ 的局部条件数共同定义的管状区域 $T_\\eta \\cap \\mathcal{B}(x^\\dagger, C_2 \\eta^\\mu)$ 之内, 为波形迭代的停止准则与后验误差界提供了统一的几何图景。"
+    },
+    {
+      "type": "p",
+      "text": "讨论: 与 FISTA 加速策略结合时, Nesterov 动量在非线性 Landweber 中需谨慎处理, 因其本质的非线性破坏了凸性依赖。数值实验表明, 在 $F$ 单调且 $A$ 自伴情形下, 通过每 $K$ 步重启动量可获得 $O(1/k^2)$ 的局部加速率, 但全局半收敛性质仍由 (3) 式的谱界控制。展望未来, 波形迭代与神经切线核理论的结合或可为深度 Hammerstein 反问题提供新的正则化视角。"
+    }
+  ]
+}
